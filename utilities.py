@@ -2,6 +2,7 @@ import numpy as np
 import os
 
 import mdtraj as md
+from msmbuilder.featurizer import RawPositionsFeaturizer
 
 def load_trajs(run_dir, parent_dir,top_dir,load_stride = None):
     '''Loads trajectories from the same run with the same condition 
@@ -27,6 +28,8 @@ def load_trajs(run_dir, parent_dir,top_dir,load_stride = None):
     return trajs
 
 def ring_center_seq(sequence):
+    '''
+    '''
     center_sequence = []
     for c_pos in sequence:
         this_x = np.mean(c_pos[::3])
@@ -45,3 +48,24 @@ def calc_time_step(times_file_dir,stride = None):
         return sim_time_step*1e-3
     else:
         return sim_time_step*1e-3*stride
+        
+def featurize_RawPos(indices,trajs):
+    '''takes indices of atoms in ligand and return sequences of average position
+    each sequence is n by m where n is the number of frames in the simulations and m = 3 for now
+    trajs is a list of mdtraj objects. Right now the are actually all from the same simulation run.
+    That's why the sequences for the same ligand are stitched together.
+    '''
+    
+    sequences = []
+    for ii in indices:
+        RawPosFeaturizer = RawPositionsFeaturizer(ii)
+        this_seq = []
+        for this_traj in trajs:
+            this_RawPosSeq = RawPosFeaturizer.partial_transform(this_traj)
+    
+            this_seq.extend(ring_center_seq(this_RawPosSeq))
+    
+        this_seq = np.array(this_seq)
+        sequences.append(this_seq)
+    
+    return sequences
