@@ -2,3 +2,4 @@
 *.ipynb
 data/
 *.pyc
+output/
