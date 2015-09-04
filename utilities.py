@@ -31,8 +31,10 @@ def load_trajs(run_dir, parent_dir,top_dir,load_stride = None):
     
     Arguments
     ---------
-    run_dir :  str, the directory where all files for a single simulation run lives
-    parent_dir : str, the directory where all simulations are stored
+    run_dir :  str
+    the directory where all files for a single simulation run lives
+    parent_dir : str
+    the directory where all simulations are stored
     
     Returns
     -------
