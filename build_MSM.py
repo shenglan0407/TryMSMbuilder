@@ -11,15 +11,12 @@ from msmbuilder.msm import MarkovStateModel
 parent_dir = '/scratch/PI/rondror/DesRes-Simulations/B2AR_PNAS_2011a_Dror_Desres/DESRES-Trajectory_pnas2011a-A-no-water-no-lipid.1'
 
 run_dirs = []
-for ii in range(2):
+for ii in range(20):
     run_dirs.append('/DESRES-Trajectory_pnas2011a-A-'+str(ii)+'-no-water-no-lipid/pnas2011a-A-'+str(ii)+'-no-water-no-lipid')
-# A0_run_dir = '/DESRES-Trajectory_pnas2011a-A-0-no-water-no-lipid/pnas2011a-A-0-no-water-no-lipid'
-# A1_run_dir = '/DESRES-Trajectory_pnas2011a-A-1-no-water-no-lipid/pnas2011a-A-1-no-water-no-lipid'
-# A2_run_dir = '/DESRES-Trajectory_pnas2011a-A-2-no-water-no-lipid/pnas2011a-A-2-no-water-no-lipid'
 dir_top = '/home/shenglan/topologies'
 times_path = parent_dir+run_dirs[0]+'/'+run_dirs[0].split('/')[-1]+'_times.csv'
 
-LOAD_STRIDE = 1000
+LOAD_STRIDE = 10
 
 colors = np.array([x for x in 'bgrcmykbgrcmykbgrcmykbgrcmyk'])
 colors = np.hstack([colors] * 20)
@@ -28,9 +25,6 @@ colors = np.hstack([colors] * 20)
 simulations = []
 for this_run_dir in run_dirs:
     simulations.append(util.load_trajs(this_run_dir,parent_dir,dir_top,load_stride = LOAD_STRIDE))
-# trajs_A_0 = util.load_trajs(A0_run_dir,parent_dir,dir_top,load_stride = LOAD_STRIDE)
-# trajs_A_1 = util.load_trajs(A1_run_dir,parent_dir,dir_top,load_stride = LOAD_STRIDE)
-# trajs_A_2 = util.load_trajs(A2_run_dir,parent_dir,dir_top,load_stride = LOAD_STRIDE)
 
 #track atoms in ligands
 inds =[] #indices of Cs in the aromatic ring
@@ -56,29 +50,21 @@ sequences_all = []
 for this_sim in simulations:
     this_seq = util.featurize_RawPos(inds,this_sim)
     sequences_all.extend(this_seq)
-# sequences_A_1 = util.featurize_RawPos(inds,trajs_A_1)
-# res_pos_A_1 = util.featurize_RawPos([res_ind],trajs_A_1)
-# 
-# sequences_A_0 = util.featurize_RawPos(inds,trajs_A_0)
-# sequences_A_2 = util.featurize_RawPos(inds,trajs_A_2)
-# 
-# sequences_all.extend(sequences_A_0)
-# sequences_all.extend(sequences_A_1)
-# sequences_all.extend(sequences_A_2)
-print len(sequences_all)
-print sequences_all[-1].shape
+
+#print len(sequences_all)
+#print sequences_all[-1].shape
 
 #average position of Asp113
-# res_pos_ave = np.mean(res_pos_A_1[0],axis = 0)
+#res_pos_ave = np.mean(res_pos_A_1[0],axis = 0)
 # 
-# time_step = util.calc_time_step(times_path,stride = LOAD_STRIDE)
+time_step = util.calc_time_step(times_path,stride = LOAD_STRIDE)
 # 
 clustering = KCenters(n_clusters = 10)
 assignments = clustering.fit_predict(sequences_all)
 centers = clustering.cluster_centers_
 
-print len(assignments)
-print assignments[1].shape
+#print len(assignments)
+#print assignments[1].shape
 
 msm = MarkovStateModel(lag_time=180, verbose=True).fit(assignments)
 countsmat = msm.countsmat_
@@ -92,8 +78,8 @@ np.savetxt('/home/shenglan/TryMSMbuilder/output/transmat.out',transmat,fmt = '%1
 
 #try different lag_times
 msmts0 = {}
-lag_times = [1,20,40,60,80,100,120,150,180]
-n_states = [10,15,30]
+lag_times = [1,20,40,60,80,100,120,140,160,180]
+n_states = [5,10,15,30]
 
 for n in n_states:
     msmts0[n] = []
@@ -124,10 +110,10 @@ fig4 = plt.figure(figsize=(18,5))
 
 for i, n in enumerate(n_states):
     plt.subplot(1,len(n_states),1+i)
-    plt.plot(lag_times, msmts0[n])
+    plt.plot(np.array(lag_times)*time_step, np.array(msmts0[n])*time_step)
     if i == 0:
-        plt.ylabel('Relaxation Timescale')
-    plt.xlabel('Lag Time')
+        plt.ylabel('Relaxation Timescale (ns)')
+    plt.xlabel('Lag Time (ns)')
     plt.title('%d states' % n)
 
 plt.savefig('/home/shenglan/TryMSMbuilder/output/fig4.png')
