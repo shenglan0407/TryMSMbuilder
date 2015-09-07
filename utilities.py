@@ -60,7 +60,7 @@ def load_trajs(run_dir, parent_dir,top_dir,load_stride = None):
     
     return trajs
 
-def ring_center_seq(sequence):
+def average_center_seq(sequence):
     """
     """
     
@@ -83,7 +83,7 @@ def calc_time_step(times_file_dir,stride = None):
     else:
         return sim_time_step*1e-3*stride
         
-def featurize_RawPos(indices,trajs):
+def featurize_RawPos(indices,trajs,average=False):
     '''takes indices of atoms in ligand and return sequences of average position
     each sequence is n by m where n is the number of frames in the simulations and m = 3 for now
     trajs is a list of mdtraj objects. Right now the are actually all from the same simulation run.
@@ -96,8 +96,10 @@ def featurize_RawPos(indices,trajs):
         this_seq = []
         for this_traj in trajs:
             this_RawPosSeq = RawPosFeaturizer.partial_transform(this_traj)
-    
-            this_seq.extend(ring_center_seq(this_RawPosSeq))
+            if average:
+                this_seq.extend(average_center_seq(this_RawPosSeq))
+            else:
+                this_seq.extend(this_RawPosSeq)
     
         this_seq = np.array(this_seq)
         sequences.append(this_seq)
