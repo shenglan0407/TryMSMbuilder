@@ -32,7 +32,7 @@ for ii in range(number_of_sims):
 dir_top = '/home/shenglan/topologies'
 times_path = parent_dir+run_dirs[0]+'/'+run_dirs[0].split('/')[-1]+'_times.csv'
 
-LOAD_STRIDE = None
+LOAD_STRIDE = 10
 
 colors = np.array([x for x in 'bgrcmykbgrcmykbgrcmykbgrcmyk'])
 colors = np.hstack([colors] * 20)
@@ -95,7 +95,7 @@ print total_frames
 
 time_step = util.calc_time_step(times_path,stride = LOAD_STRIDE)
  
-clustering = KCenters(n_clusters = 2000)
+clustering = KCenters(n_clusters = 350)
 assignments = clustering.fit_predict(sequences_all)
 centers = clustering.cluster_centers_
 
@@ -116,8 +116,8 @@ np.savetxt('/home/shenglan/TryMSMbuilder/output/res_pos_ave.out',res_pos_ave,fmt
 
 #try different lag_times
 msmts0 = {}
-lag_times = [20,60,100,150,180]
-n_states = [2000,2200,2400,2600]
+lag_times = [20,100,200,400,600,800,1000,2000]
+n_states = [200,400,800,1500]
 
 for n in n_states:
     msmts0[n] = []
@@ -126,7 +126,7 @@ for n in n_states:
         msm = MarkovStateModel(lag_time=lag_time, verbose=False).fit(assignments)
         timescales = msm.timescales_
         msmts0[n].append(timescales[0])
-        print('n_states=%d\tlag_time=%d\ttimescales=%s' % (n, lag_time, timescales[0:2]))
+        print('n_states=%d\tlag_time=%d\ttimescales=%s (ns)' % (n, lag_time*time_step, np.array(timescales[0:2])*time_step))
     print('-------------------')
 
 
