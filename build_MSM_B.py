@@ -15,6 +15,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 from msmbuilder.cluster import KCenters
+from msmbuilder.cluster import KMedoids
 from msmbuilder.msm import MarkovStateModel
 
 #-----------------------------------------------------------------------------
@@ -32,7 +33,7 @@ for ii in range(number_of_sims):
 dir_top = '/home/shenglan/topologies'
 times_path = parent_dir+run_dirs[0]+'/'+run_dirs[0].split('/')[-1]+'_times.csv'
 
-LOAD_STRIDE = 10
+LOAD_STRIDE = 100
 
 colors = np.array([x for x in 'bgrcmykbgrcmykbgrcmykbgrcmyk'])
 colors = np.hstack([colors] * 20)
@@ -95,7 +96,7 @@ print total_frames
 
 time_step = util.calc_time_step(times_path,stride = LOAD_STRIDE)
  
-clustering = KCenters(n_clusters = 350)
+clustering = KMedoids(n_clusters = 50)
 assignments = clustering.fit_predict(sequences_all)
 centers = clustering.cluster_centers_
 
@@ -116,13 +117,13 @@ np.savetxt('/home/shenglan/TryMSMbuilder/output/res_pos_ave.out',res_pos_ave,fmt
 
 #try different lag_times
 msmts0 = {}
-lag_times = [20,100,200,400,600,800,1000,2000]
-n_states = [200,400,800,1500]
+lag_times = [10,20,30,40,80]
+n_states = [100]
 
 for n in n_states:
     msmts0[n] = []
     for lag_time in lag_times:
-        assignments = KCenters(n_clusters=n).fit_predict(sequences_all)
+        assignments = KMedoids(n_clusters=n).fit_predict(sequences_all)
         msm = MarkovStateModel(lag_time=lag_time, verbose=False).fit(assignments)
         timescales = msm.timescales_
         msmts0[n].append(timescales[0])
