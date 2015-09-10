@@ -33,8 +33,8 @@ for ii in range(number_of_sims):
 dir_top = '/home/shenglan/topologies'
 times_path = parent_dir+run_dirs[0]+'/'+run_dirs[0].split('/')[-1]+'_times.csv'
 
-LOAD_STRIDE = 10
-N_CLUSTER = 50
+LOAD_STRIDE = 100
+N_CLUSTER = 5
 
 #load list of mdtraj objects
 simulations = []
