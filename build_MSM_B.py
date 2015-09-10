@@ -1,6 +1,4 @@
 #---------------------------------------------------------------------
-
-import utilities as util
 # Author: Shenglan Qiao <shenglan@stanford.edu>
 # Contributors:
 # Copyright (c) 2015, Stanford University
@@ -13,6 +11,7 @@ import numpy as np
 import pickle
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+import utilities as util
 
 from msmbuilder.cluster import KCenters
 from msmbuilder.cluster import KMedoids
@@ -69,7 +68,7 @@ first_res_number = int(items[-1])
 target_res = simulations[0][0].topology.chain(0).residue(113-first_res_number)
 res_ind = [[atom.index for atom in target_res.atoms if atom.name in ['OD1']]]
 
-#sequences of coordinates of ligand aromatic ring and Aps113
+#sequences of coordinates of ligands and Aps113
 sequences_all = []
 for this_sim in simulations:
     if use_COM:
@@ -92,7 +91,7 @@ for this_sim in simulations:
     res_pos_ave.append(np.mean(this_seq[0],axis=0))
 
 print total_frames
-
+print sequences_all[0][0:3]
 
 time_step = util.calc_time_step(times_path,stride = LOAD_STRIDE)
  
