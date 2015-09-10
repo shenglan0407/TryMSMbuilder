@@ -64,6 +64,8 @@ for this_sim in simulations:
     else:
         this_seq = util.featurize_RawPos(inds_N,this_sim)
     sequences_all.extend(this_seq)
+
+pickle.dump(sequences_all, open('/home/shenglan/TryMSMbuilder/output/sequences.out','wb'))
     
 KC_clustering = KCenters(n_clusters = N_CLUSTER)
 KC_assignments = KC_clustering.fit_predict(sequences_all)
@@ -78,12 +80,17 @@ KM_output_file = '/home/shenglan/TryMSMbuilder/output/KM_centers_'+str(N_CLUSTER
 np.savetxt(KC_output_file,KC_centers,fmt = '%10.4g')
 np.savetxt(KM_output_file,KM_centers,fmt = '%10.4g')
 
+KC_output_file = '/home/shenglan/TryMSMbuilder/output/KC_assign_'+str(N_CLUSTER)+'.out'
+KM_output_file = '/home/shenglan/TryMSMbuilder/output/KM_assign_'+str(N_CLUSTER)+'.out'
+pickle.dump(KC_assignments,open(KC_output_file,'wb'))
+pickle.dump(KM_assignments,open(KM_output_file,'wb'))
+
 KC_pdb_path = KC_output_file.split('.')[0]+'.pdb' 
 KM_pdb_path = KM_output_file.split('.')[0]+'.pdb' 
-
-util.convert_to_pdb(KC_output_file,KC_pdb_path)
-util.convert_to_pdb(KM_output_file,KM_pdb_path)
-
+# 
+# util.convert_to_pdb(KC_output_file,KC_pdb_path)
+# util.convert_to_pdb(KM_output_file,KM_pdb_path)
+# 
 
 
 
