@@ -10,6 +10,7 @@
 
 import numpy as np
 import os
+import pickle
 
 import mdtraj as md
 from msmbuilder.featurizer import RawPositionsFeaturizer
@@ -122,3 +123,27 @@ def convert_to_pdb(filepath,savepath):
     outfile.write('%s    \n' % 'END')
     
     print('Done converting! \nConverted .pdb file lives in %s.' % savepath)
+
+def convert_sequences_to_pdb(seqpath,assignpath,savepath):
+    sequences = pickle.load(open(seqpath,'rb'))
+    assign = pickle.load(open(assignpath,'rb'))
+    
+    outfile = open(savepath,'wb')
+    outfile.write('%s     %s \n' % ('TITLE', 'cluster centers'))
+    outfile.write('%s        %d \n' % ('MODEL' , 1))
+    atom_count = 0
+    
+    for this_seq,this_assign in zip(sequences,assign):
+        atom_num = this_seq.shape[0]
+    
+        for ii in range(atom_num):
+            atom_count = atom_count + 1
+            outfile.write("%6s%5d %4s %3s %1s%4d%1s   %8.3f%8.3f%8.3f%6.2f%6.2f          %2s  \n" % 
+            ('HETATM', ii+1,'N','ALP','I',this_assign[ii]+1,'D'
+            ,this_seq[ii,0]*10,this_seq[ii,1]*10,this_seq[ii,2]*10, 1.0, 0.0,'N')) 
+            #the factor of 10 multiplied to the coordinate is a conversion from nm to angstrom, to match the .mae file provided by DesRes
+        
+    outfile.write('%s \n' % 'ENDMDL')
+    outfile.write('%s    \n' % 'END')
+    
+    print('done converting!\nConverted .pdb file lives in %s.' % savepath)
