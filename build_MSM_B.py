@@ -33,7 +33,7 @@ for ii in range(number_of_sims):
 dir_top = '/home/shenglan/topologies'
 times_path = parent_dir+run_dirs[0]+'/'+run_dirs[0].split('/')[-1]+'_times.csv'
 
-LOAD_STRIDE = 100
+LOAD_STRIDE = 10
 
 colors = np.array([x for x in 'bgrcmykbgrcmykbgrcmykbgrcmyk'])
 colors = np.hstack([colors] * 20)
@@ -96,7 +96,7 @@ print total_frames
 
 time_step = util.calc_time_step(times_path,stride = LOAD_STRIDE)
  
-clustering = KMedoids(n_clusters = 50)
+clustering = KCenters(n_clusters = 50)
 assignments = clustering.fit_predict(sequences_all)
 centers = clustering.cluster_centers_
 
@@ -115,20 +115,20 @@ np.savetxt('/home/shenglan/TryMSMbuilder/output/cluster_centers.out',centers,fmt
 np.savetxt('/home/shenglan/TryMSMbuilder/output/res_pos_ave.out',res_pos_ave,fmt = '%10.4g')
 
 
-#try different lag_times
-msmts0 = {}
-lag_times = [10,20,30,40,80]
-n_states = [100]
-
-for n in n_states:
-    msmts0[n] = []
-    for lag_time in lag_times:
-        assignments = KMedoids(n_clusters=n).fit_predict(sequences_all)
-        msm = MarkovStateModel(lag_time=lag_time, verbose=False).fit(assignments)
-        timescales = msm.timescales_
-        msmts0[n].append(timescales[0])
-        print('n_states=%d\tlag_time=%d\ttimescales=%s (ns)' % (n, lag_time*time_step, np.array(timescales[0:2])*time_step))
-    print('-------------------')
+# #try different lag_times
+# msmts0 = {}
+# lag_times = [10,20,30,40,80]
+# n_states = [100]
+# 
+# for n in n_states:
+#     msmts0[n] = []
+#     for lag_time in lag_times:
+#         assignments = KCenters(n_clusters=n).fit_predict(sequences_all)
+#         msm = MarkovStateModel(lag_time=lag_time, verbose=False).fit(assignments)
+#         timescales = msm.timescales_
+#         msmts0[n].append(timescales[0])
+#         print('n_states=%d\tlag_time=%d\ttimescales=%s (ns)' % (n, lag_time*time_step, np.array(timescales[0:2])*time_step))
+#     print('-------------------')
 
 
 #----------------------------------------------------------------------------------
@@ -146,19 +146,19 @@ for n in n_states:
 # plt.close(fig5)
 
 #----------------------------------------------------------------------------------
-fig4 = plt.figure(figsize=(18,5))
-plt.title('lag time vs relaxation time condition B')
-
-for i, n in enumerate(n_states):
-    plt.subplot(1,len(n_states),1+i)
-    plt.plot(np.array(lag_times)*time_step, np.array(msmts0[n])*time_step)
-    if i == 0:
-        plt.ylabel('Relaxation Timescale (ns)')
-    plt.xlabel('Lag Time (ns)')
-    plt.title('%d states' % n)
-
-plt.savefig('/home/shenglan/TryMSMbuilder/output/fig4.png')
-plt.close(fig4)
+# fig4 = plt.figure(figsize=(18,5))
+# plt.title('lag time vs relaxation time condition B')
+# 
+# for i, n in enumerate(n_states):
+#     plt.subplot(1,len(n_states),1+i)
+#     plt.plot(np.array(lag_times)*time_step, np.array(msmts0[n])*time_step)
+#     if i == 0:
+#         plt.ylabel('Relaxation Timescale (ns)')
+#     plt.xlabel('Lag Time (ns)')
+#     plt.title('%d states' % n)
+# 
+# plt.savefig('/home/shenglan/TryMSMbuilder/output/fig4.png')
+# plt.close(fig4)
 
 #----------------------------------------------------------------------------------
 # fig1 = plt.figure(figsize = (100,100))
