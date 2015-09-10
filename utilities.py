@@ -108,6 +108,16 @@ def featurize_RawPos(indices,trajs,average=False):
     return sequences
 
 def convert_to_pdb(filepath,savepath):
+    """Takes a list of 3D spatial coordinates and convert to pdb format for viewing in vmd
+    
+    Arguments
+    ---------
+    filepath :  str
+    explicit path to file storing coordinates
+    savepath : str
+    where to save the converted pdb
+    
+    """
     crds = np.loadtxt(filepath)
     outfile = open(savepath,'wb')
     atom_num = crds.shape[0]
@@ -125,6 +135,21 @@ def convert_to_pdb(filepath,savepath):
     print('Done converting! \nConverted .pdb file lives in %s.' % savepath)
 
 def convert_sequences_to_pdb(seqpath,assignpath,savepath):
+    """Takes a list of 3D spatial coordinates used for clustering and convert to pdb 
+    format for viewing in vmd. The cluster assignment is stored as the residue sequence
+    number or resid. Use resid for representation so different clusters have different
+    colors in vmd.
+    
+    Arguments
+    ---------
+    seqpath :  str
+    explicit path to file storing coordinates
+    assignpath: str
+    explicit path to file storing assignments of each point to cluster
+    savepath : str
+    where to save the converted pdb
+    
+    """
     sequences = pickle.load(open(seqpath,'rb'))
     assign = pickle.load(open(assignpath,'rb'))
     
