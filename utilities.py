@@ -43,8 +43,12 @@ def load_trajs(run_dir, parent_dir,top_dir,load_stride = None):
     """
     
     trajs = []
+    traj_files = []
     for this_file in os.listdir(parent_dir+run_dir):
         if this_file.endswith('.dcd'):
+            traj_files.append(this_file)
+    if len(traj_files) > 0:
+        for this_file in sorted(traj_files):
             topology = top_dir + '/pnas2011a-' + this_file.split('-')[1] \
             + '-0-no-water-no-lipid.pdb'
         
@@ -58,6 +62,8 @@ def load_trajs(run_dir, parent_dir,top_dir,load_stride = None):
                                     , stride = load_stride
                                     )
             trajs.append(this_traj)
+    else:
+        print('There are no .dcd files in %s /n Returned traj list is empty' % (parent_dir+run_dir))
     
     return trajs
 
