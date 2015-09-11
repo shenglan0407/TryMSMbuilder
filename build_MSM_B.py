@@ -45,28 +45,28 @@ for this_run_dir in run_dirs:
 #track atoms in ligands
 inds_N =[] #indices of N atom
 atoms_to_track =['N']
-ligands = [residue for residue in simulations[0][0].topology.chain(1).residues][:-1]
+ligands = [residue for residue in simulations[0][0].topology.chain(0).residues][0:10]
 
 for ligand in ligands:
-    iis = [atom.index for atom in simulations[0][0].topology.chain(1).atoms if atom.element.symbol in atoms_to_track
+    iis = [atom.index for atom in simulations[0][0].topology.chain(0).atoms if atom.element.symbol in atoms_to_track
           and atom.residue == ligand]
     inds_N.append(iis)
     
 inds_all = [] #indices of all atoms, separated by ligands
 for ligand in ligands:
-    iis = [atom.index for atom in simulations[0][0].topology.chain(1).atoms if atom.residue == ligand]
+    iis = [atom.index for atom in simulations[0][0].topology.chain(0).atoms if atom.residue == ligand]
     inds_all.append(iis)
 
 
-#track residue Aps113
-first_res = str(simulations[0][0].topology.chain(0).residue(0))
-import re
-match = re.match(r"([a-z]+)([0-9]+)", first_res, re.I)
-if match:
-    items = match.groups()
-first_res_number = int(items[-1])
-target_res = simulations[0][0].topology.chain(0).residue(113-first_res_number)
-res_ind = [[atom.index for atom in target_res.atoms if atom.name in ['OD1']]]
+# #track residue Aps113
+# first_res = str(simulations[0][0].topology.chain(0).residue(0))
+# import re
+# match = re.match(r"([a-z]+)([0-9]+)", first_res, re.I)
+# if match:
+#     items = match.groups()
+# first_res_number = int(items[-1])
+# target_res = simulations[0][0].topology.chain(0).residue(113-first_res_number)
+# res_ind = [[atom.index for atom in target_res.atoms if atom.name in ['OD1']]]
 
 #sequences of coordinates of ligands and Aps113
 sequences_all = []
@@ -81,21 +81,21 @@ for this_sim in simulations:
 #print sequences_all[-1].shape
 
 
-res_pos = []
-res_pos_ave =[]
-total_frames = 0
-for this_sim in simulations:
-    this_seq = util.featurize_RawPos(res_ind,this_sim)
-    res_pos.extend(this_seq)
-    total_frames = total_frames + len(this_seq[0])
-    res_pos_ave.append(np.mean(this_seq[0],axis=0))
-
-print total_frames
-print sequences_all[0][0:3]
+# res_pos = []
+# res_pos_ave =[]
+# total_frames = 0
+# for this_sim in simulations:
+#     this_seq = util.featurize_RawPos(res_ind,this_sim)
+#     res_pos.extend(this_seq)
+#     total_frames = total_frames + len(this_seq[0])
+#     res_pos_ave.append(np.mean(this_seq[0],axis=0))
+# 
+# print total_frames
+# print sequences_all[0][0:3]
 
 time_step = util.calc_time_step(times_path,stride = LOAD_STRIDE)
  
-clustering = KCenters(n_clusters = 50)
+clustering = KCenters(n_clusters = 5)
 assignments = clustering.fit_predict(sequences_all)
 centers = clustering.cluster_centers_
 
@@ -111,23 +111,23 @@ transmat = msm.transmat_
 np.savetxt('/home/shenglan/TryMSMbuilder/output/countsmat.out',countsmat,fmt = '%8.4g')
 np.savetxt('/home/shenglan/TryMSMbuilder/output/transmat.out',transmat,fmt = '%10.4g')
 np.savetxt('/home/shenglan/TryMSMbuilder/output/cluster_centers.out',centers,fmt = '%10.4g')
-np.savetxt('/home/shenglan/TryMSMbuilder/output/res_pos_ave.out',res_pos_ave,fmt = '%10.4g')
+# np.savetxt('/home/shenglan/TryMSMbuilder/output/res_pos_ave.out',res_pos_ave,fmt = '%10.4g')
 
 
-# #try different lag_times
-# msmts0 = {}
-# lag_times = [10,20,30,40,80]
-# n_states = [100]
-# 
-# for n in n_states:
-#     msmts0[n] = []
-#     for lag_time in lag_times:
-#         assignments = KCenters(n_clusters=n).fit_predict(sequences_all)
-#         msm = MarkovStateModel(lag_time=lag_time, verbose=False).fit(assignments)
-#         timescales = msm.timescales_
-#         msmts0[n].append(timescales[0])
-#         print('n_states=%d\tlag_time=%d\ttimescales=%s (ns)' % (n, lag_time*time_step, np.array(timescales[0:2])*time_step))
-#     print('-------------------')
+#try different lag_times
+msmts0 = {}
+lag_times = [10,50,100,150,200]
+n_states = [1000,2000,3000,4000]
+
+for n in n_states:
+    msmts0[n] = []
+    for lag_time in lag_times:
+        assignments = KCenters(n_clusters=n).fit_predict(sequences_all)
+        msm = MarkovStateModel(lag_time=lag_time, verbose=False).fit(assignments)
+        timescales = msm.timescales_
+        msmts0[n].append(timescales[0])
+        print('n_states=%d\tlag_time=%.1f\ttimescales=%s (ns)' % (n, lag_time*time_step, np.array(timescales[0:2])*time_step))
+    print('-------------------')
 
 
 #----------------------------------------------------------------------------------
@@ -145,19 +145,19 @@ np.savetxt('/home/shenglan/TryMSMbuilder/output/res_pos_ave.out',res_pos_ave,fmt
 # plt.close(fig5)
 
 #----------------------------------------------------------------------------------
-# fig4 = plt.figure(figsize=(18,5))
-# plt.title('lag time vs relaxation time condition B')
-# 
-# for i, n in enumerate(n_states):
-#     plt.subplot(1,len(n_states),1+i)
-#     plt.plot(np.array(lag_times)*time_step, np.array(msmts0[n])*time_step)
-#     if i == 0:
-#         plt.ylabel('Relaxation Timescale (ns)')
-#     plt.xlabel('Lag Time (ns)')
-#     plt.title('%d states' % n)
-# 
-# plt.savefig('/home/shenglan/TryMSMbuilder/output/fig4.png')
-# plt.close(fig4)
+fig4 = plt.figure(figsize=(18,5))
+plt.title('lag time vs relaxation time condition B')
+
+for i, n in enumerate(n_states):
+    plt.subplot(1,len(n_states),1+i)
+    plt.plot(np.array(lag_times)*time_step, np.array(msmts0[n])*time_step)
+    if i == 0:
+        plt.ylabel('Relaxation Timescale (ns)')
+    plt.xlabel('Lag Time (ns)')
+    plt.title('%d states' % n)
+
+plt.savefig('/home/shenglan/TryMSMbuilder/output/fig4.png')
+plt.close(fig4)
 
 #----------------------------------------------------------------------------------
 # fig1 = plt.figure(figsize = (100,100))
