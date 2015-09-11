@@ -32,10 +32,8 @@ for ii in range(number_of_sims):
 dir_top = '/home/shenglan/topologies'
 times_path = parent_dir+run_dirs[0]+'/'+run_dirs[0].split('/')[-1]+'_times.csv'
 
-LOAD_STRIDE = 10
+LOAD_STRIDE = None
 
-colors = np.array([x for x in 'bgrcmykbgrcmykbgrcmykbgrcmyk'])
-colors = np.hstack([colors] * 20)
 
 #load list of mdtraj objects
 simulations = []
@@ -56,17 +54,6 @@ inds_all = [] #indices of all atoms, separated by ligands
 for ligand in ligands:
     iis = [atom.index for atom in simulations[0][0].topology.chain(0).atoms if atom.residue == ligand]
     inds_all.append(iis)
-
-
-# #track residue Aps113
-# first_res = str(simulations[0][0].topology.chain(0).residue(0))
-# import re
-# match = re.match(r"([a-z]+)([0-9]+)", first_res, re.I)
-# if match:
-#     items = match.groups()
-# first_res_number = int(items[-1])
-# target_res = simulations[0][0].topology.chain(0).residue(113-first_res_number)
-# res_ind = [[atom.index for atom in target_res.atoms if atom.name in ['OD1']]]
 
 #sequences of coordinates of ligands and Aps113
 sequences_all = []
@@ -95,7 +82,7 @@ for this_sim in simulations:
 
 time_step = util.calc_time_step(times_path,stride = LOAD_STRIDE)
  
-clustering = KCenters(n_clusters = 5)
+clustering = KCenters(n_clusters = 20)
 assignments = clustering.fit_predict(sequences_all)
 centers = clustering.cluster_centers_
 
@@ -116,16 +103,19 @@ np.savetxt('/home/shenglan/TryMSMbuilder/output/cluster_centers.out',centers,fmt
 
 #try different lag_times
 msmts0 = {}
-lag_times = [10,50,100,150,200]
-n_states = [1000,2000,3000,4000]
+msmts1 = {}
+lag_times = [10,50,100,150,200,250,300]
+n_states = [20,30,50]
 
 for n in n_states:
     msmts0[n] = []
+    msmts1[n] = []
     for lag_time in lag_times:
         assignments = KCenters(n_clusters=n).fit_predict(sequences_all)
         msm = MarkovStateModel(lag_time=lag_time, verbose=False).fit(assignments)
         timescales = msm.timescales_
         msmts0[n].append(timescales[0])
+        msmts1[n].append(timescales[1])
         print('n_states=%d\tlag_time=%.1f\ttimescales=%s (ns)' % (n, lag_time*time_step, np.array(timescales[0:2])*time_step))
     print('-------------------')
 
@@ -152,12 +142,27 @@ for i, n in enumerate(n_states):
     plt.subplot(1,len(n_states),1+i)
     plt.plot(np.array(lag_times)*time_step, np.array(msmts0[n])*time_step)
     if i == 0:
-        plt.ylabel('Relaxation Timescale (ns)')
+        plt.ylabel('Relaxation Timescale 1(ns)')
     plt.xlabel('Lag Time (ns)')
     plt.title('%d states' % n)
 
-plt.savefig('/home/shenglan/TryMSMbuilder/output/fig4.png')
+plt.savefig('/home/shenglan/TryMSMbuilder/output/lagtime_ts1.png')
 plt.close(fig4)
+
+#----------------------------------------------------------------------------------
+fig6 = plt.figure(figsize=(18,5))
+plt.title('lag time vs relaxation time condition B')
+
+for i, n in enumerate(n_states):
+    plt.subplot(1,len(n_states),1+i)
+    plt.plot(np.array(lag_times)*time_step, np.array(msmts1[n])*time_step)
+    if i == 0:
+        plt.ylabel('Relaxation Timescale 2(ns)')
+    plt.xlabel('Lag Time (ns)')
+    plt.title('%d states' % n)
+
+plt.savefig('/home/shenglan/TryMSMbuilder/output/lagtime_ts2.png')
+plt.close(fig6)
 
 #----------------------------------------------------------------------------------
 # fig1 = plt.figure(figsize = (100,100))
@@ -202,3 +207,16 @@ plt.close(fig4)
 # # ax.scatter(res_pos_ave[0],res_pos_ave[1],res_pos_ave[2],color = 'Yellow', marker = '*',s=500)
 # # plt.savefig('/home/shenglan/TryMSMbuilder/output/fig3.png')
 # plt.close(fig3)
+
+# colors = np.array([x for x in 'bgrcmykbgrcmykbgrcmykbgrcmyk'])
+# colors = np.hstack([colors] * 20)
+
+# #track residue Aps113
+# first_res = str(simulations[0][0].topology.chain(0).residue(0))
+# import re
+# match = re.match(r"([a-z]+)([0-9]+)", first_res, re.I)
+# if match:
+#     items = match.groups()
+# first_res_number = int(items[-1])
+# target_res = simulations[0][0].topology.chain(0).residue(113-first_res_number)
+# res_ind = [[atom.index for atom in target_res.atoms if atom.name in ['OD1']]]
