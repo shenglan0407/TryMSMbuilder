@@ -81,14 +81,31 @@ for this_sim in simulations:
     this_dist = np.array(this_dist)
     distances.append(this_dist)
 
-print len(distances)
- 
-print distances[0].shape
-print distances[0][0]
+sequences_all = []
+for this_sim in simulations:
+    if use_COM:
+        this_seq = util.featurize_RawPos(inds_all,this_sim,average = True)
+    else:
+        this_seq = util.featurize_RawPos(inds_N,this_sim)
+    sequences_all.extend(this_seq)
+    
+# convert to pdb so I can view in vmd
+# will use chian ID to store if ligand is in bulk or near receptor
 
-test_traj = simulations[0][0]
-a1 = np.array(test_traj.xyz[1,3,:])
-a2 = np.array(test_traj.xyz[1,1099,:])
-print np.sqrt(np.sum((a1-a2)**2))
-print md_dist.compute_distances(test_traj,[[3,1099]])
-        
+BULK_CUTOFF = 2.0 #unit is nm
+
+assignments = []
+this_assign = []
+for this_sim in distances:
+    natoms = this_sim.shape[1]
+    for ii in range(natoms):
+        this_assign = []
+        for this_frame in this_sim[:,ii]:
+            if this_frame > BULK_CUTOFF:
+                #B for bulk
+                this_assign.append('B')
+            else:
+                #R for receptor
+                this_assign.append('R')
+        assignments.append(this_assign)
+    
