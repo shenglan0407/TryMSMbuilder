@@ -82,41 +82,44 @@ for this_sim in simulations:
 
 time_step = util.calc_time_step(times_path,stride = LOAD_STRIDE)
  
-clustering = KCenters(n_clusters = 20)
-assignments = clustering.fit_predict(sequences_all)
-centers = clustering.cluster_centers_
-
-#print len(assignments)
-#print assignments[1].shape
-
-msm = MarkovStateModel(lag_time=180, verbose=True).fit(assignments)
-countsmat = msm.countsmat_
-transmat = msm.transmat_
-#print np.sum(countsmat)
-
-#np.savetxt('/home/shenglan/TryMSMbuilder/output/assignments.out',assignments, fmt = '%3.0f')
-np.savetxt('/home/shenglan/TryMSMbuilder/output/countsmat.out',countsmat,fmt = '%8.4g')
-np.savetxt('/home/shenglan/TryMSMbuilder/output/transmat.out',transmat,fmt = '%10.4g')
-np.savetxt('/home/shenglan/TryMSMbuilder/output/cluster_centers.out',centers,fmt = '%10.4g')
+# clustering = KCenters(n_clusters = 5000)
+# assignments = clustering.fit_predict(sequences_all)
+# centers = clustering.cluster_centers_
+# 
+# print len(assignments)
+# print assignments[1].shape
+# 
+# msm = MarkovStateModel(lag_time=300, verbose=True).fit(assignments)
+# countsmat = msm.countsmat_
+# transmat = msm.transmat_
+# #print np.sum(countsmat)
+# 
+# #np.savetxt('/home/shenglan/TryMSMbuilder/output/assignments.out',assignments, fmt = '%3.0f')
+# np.savetxt('/home/shenglan/TryMSMbuilder/output/countsmat.out',countsmat,fmt = '%8.4g')
+# np.savetxt('/home/shenglan/TryMSMbuilder/output/transmat.out',transmat,fmt = '%10.4g')
+# np.savetxt('/home/shenglan/TryMSMbuilder/output/cluster_centers.out',centers,fmt = '%10.4g')
 # np.savetxt('/home/shenglan/TryMSMbuilder/output/res_pos_ave.out',res_pos_ave,fmt = '%10.4g')
 
 
 #try different lag_times
 msmts0 = {}
 msmts1 = {}
-lag_times = [10,50,100,150,200,250,300]
-n_states = [20,30,50]
+msmts2 = {}
+lag_times = [10,100,200,300,400,450,500,600]
+n_states = [5000]
 
 for n in n_states:
     msmts0[n] = []
     msmts1[n] = []
+    msmts2[n] = []
     for lag_time in lag_times:
         assignments = KCenters(n_clusters=n).fit_predict(sequences_all)
         msm = MarkovStateModel(lag_time=lag_time, verbose=False).fit(assignments)
         timescales = msm.timescales_
         msmts0[n].append(timescales[0])
         msmts1[n].append(timescales[1])
-        print('n_states=%d\tlag_time=%.1f\ttimescales=%s (ns)' % (n, lag_time*time_step, np.array(timescales[0:2])*time_step))
+        msmts2[n].append(timescales[2])
+        print('n_states=%d\tlag_time=%.1f\ttimescales=%s (ns)' % (n, lag_time*time_step, np.array(timescales[0:3])*time_step))
     print('-------------------')
 
 
@@ -163,6 +166,21 @@ for i, n in enumerate(n_states):
 
 plt.savefig('/home/shenglan/TryMSMbuilder/output/lagtime_ts2.png')
 plt.close(fig6)
+
+#----------------------------------------------------------------------------------
+fig7 = plt.figure(figsize=(18,5))
+plt.title('lag time vs relaxation time condition B')
+
+for i, n in enumerate(n_states):
+    plt.subplot(1,len(n_states),1+i)
+    plt.plot(np.array(lag_times)*time_step, np.array(msmts2[n])*time_step)
+    if i == 0:
+        plt.ylabel('Relaxation Timescale 3(ns)')
+    plt.xlabel('Lag Time (ns)')
+    plt.title('%d states' % n)
+
+plt.savefig('/home/shenglan/TryMSMbuilder/output/lagtime_ts3.png')
+plt.close(fig7)
 
 #----------------------------------------------------------------------------------
 # fig1 = plt.figure(figsize = (100,100))
