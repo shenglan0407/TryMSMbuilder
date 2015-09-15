@@ -32,7 +32,7 @@ for ii in range(number_of_sims):
 dir_top = '/home/shenglan/topologies'
 times_path = parent_dir+run_dirs[0]+'/'+run_dirs[0].split('/')[-1]+'_times.csv'
 
-LOAD_STRIDE = None
+LOAD_STRIDE = 10
 
 
 #load list of mdtraj objects
@@ -56,16 +56,19 @@ for ligand in ligands:
     inds_all.append(iis)
 
 #sequences of coordinates of ligands and Aps113
+total_frames = 0
 sequences_all = []
 for this_sim in simulations:
     if use_COM:
         this_seq = util.featurize_RawPos(inds_all,this_sim,average = True)
     else:
         this_seq = util.featurize_RawPos(inds_N,this_sim)
+    total_frames = this_seq[0].shape[0]*10+total_frames
     sequences_all.extend(this_seq)
+print('the total number of conformations we are clustering is %d.' % total_frames)
 
-#print len(sequences_all)
-#print sequences_all[-1].shape
+# print len(sequences_all)
+# print sequences_all[-1].shape
 
 
 # res_pos = []
@@ -100,12 +103,11 @@ time_step = util.calc_time_step(times_path,stride = LOAD_STRIDE)
 # np.savetxt('/home/shenglan/TryMSMbuilder/output/cluster_centers.out',centers,fmt = '%10.4g')
 # np.savetxt('/home/shenglan/TryMSMbuilder/output/res_pos_ave.out',res_pos_ave,fmt = '%10.4g')
 
-
-#try different lag_times
+# try different lag_times
 msmts0 = {}
 msmts1 = {}
 msmts2 = {}
-lag_times = [10,100,200,300,400,450,500,600]
+lag_times = [10,100,200,300,400,450,500]
 n_states = [5000]
 
 for n in n_states:
