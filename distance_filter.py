@@ -35,7 +35,7 @@ for ii in range(number_of_sims):
 dir_top = '/home/shenglan/topologies'
 times_path = parent_dir+run_dirs[0]+'/'+run_dirs[0].split('/')[-1]+'_times.csv'
 
-LOAD_STRIDE = 1000
+LOAD_STRIDE = 10
 
 
 #load list of mdtraj objects
@@ -82,12 +82,15 @@ for this_sim in simulations:
     distances.append(this_dist)
 
 sequences_all = []
+total_frames = 0
 for this_sim in simulations:
     if use_COM:
         this_seq = util.featurize_RawPos(inds_all,this_sim,average = True)
     else:
         this_seq = util.featurize_RawPos(inds_N,this_sim)
+    total_frames = this_seq[0].shape[0]*10+total_frames
     sequences_all.extend(this_seq)
+print('the total number of conformations we are clustering is %d.' % total_frames)
     
 # convert to pdb so I can view in vmd
 # will use chian ID to store if ligand is in bulk or near receptor
@@ -108,4 +111,26 @@ for this_sim in distances:
                 #R for receptor
                 this_assign.append('R')
         assignments.append(this_assign)
+
+# convert results to pdb
+savepath = '/home/shenglan/TryMSMbuilder/output/cf'+str(BULK_CUTOFF)+'_s'+str(LOAD_STRIDE)+'.pdb'
+
+outfile = open(savepath,'wb')
+outfile.write('%s     %s \n' % ('TITLE', 'bulk vs receptor'))
+outfile.write('%s        %d \n' % ('MODEL' , 1))
+atom_count = 0
+
+for this_seq,this_assign in zip(sequences_all,assignments):
+    atom_num = this_seq.shape[0]
+
+    for ii in range(atom_num):
+        atom_count = atom_count + 1
+        outfile.write("%6s%5d %4s %3s %1s%4d%1s   %8.3f%8.3f%8.3f%6.2f%6.2f          %2s  \n" % 
+        ('HETATM', ii+1,'N','ALP',this_assign[ii],atom_count,'D'
+        ,this_seq[ii,0]*10,this_seq[ii,1]*10,this_seq[ii,2]*10, 1.0, 0.0,'N')) 
+        #the factor of 10 multiplied to the coordinate is a conversion from nm to angstrom, to match the .mae file provided by DesRes
     
+outfile.write('%s \n' % 'ENDMDL')
+outfile.write('%s    \n' % 'END')
+
+print('done converting!\nConverted .pdb file lives in %s.' % savepath)
