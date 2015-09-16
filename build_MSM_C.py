@@ -33,7 +33,7 @@ dir_top = '/home/shenglan/topologies'
 times_path = parent_dir+run_dirs[0]+'/'+run_dirs[0].split('/')[-1]+'_times.csv'
 
 LOAD_STRIDE = 10
-
+N_CLUSTER = 500
 
 #load list of mdtraj objects
 simulations = []
@@ -69,37 +69,35 @@ for this_sim in simulations:
 print('the total number of conformations we are clustering is %d.' % total_frames)
 
 
-# res_pos = []
-# res_pos_ave =[]
-# total_frames = 0
-# for this_sim in simulations:
-#     this_seq = util.featurize_RawPos(res_ind,this_sim)
-#     res_pos.extend(this_seq)
-#     total_frames = total_frames + len(this_seq[0])
-#     res_pos_ave.append(np.mean(this_seq[0],axis=0))
-# 
-# print total_frames
-# print sequences_all[0][0:3]
 
 time_step = util.calc_time_step(times_path,stride = LOAD_STRIDE)
  
-# clustering = KCenters(n_clusters = 5000)
-# assignments = clustering.fit_predict(sequences_all)
-# centers = clustering.cluster_centers_
+clustering = KCenters(n_clusters = N_CLUSTER)
+assignments = clustering.fit_predict(sequences_all)
+centers = clustering.cluster_centers_
 # 
 # print len(assignments)
 # print assignments[1].shape
 # 
-# msm = MarkovStateModel(lag_time=300, verbose=True).fit(assignments)
-# countsmat = msm.countsmat_
-# transmat = msm.transmat_
-# #print np.sum(countsmat)
-# 
-# #np.savetxt('/home/shenglan/TryMSMbuilder/output/assignments.out',assignments, fmt = '%3.0f')
-# np.savetxt('/home/shenglan/TryMSMbuilder/output/countsmat.out',countsmat,fmt = '%8.4g')
-# np.savetxt('/home/shenglan/TryMSMbuilder/output/transmat.out',transmat,fmt = '%10.4g')
-# np.savetxt('/home/shenglan/TryMSMbuilder/output/cluster_centers.out',centers,fmt = '%10.4g')
-# np.savetxt('/home/shenglan/TryMSMbuilder/output/res_pos_ave.out',res_pos_ave,fmt = '%10.4g')
+msm = MarkovStateModel(lag_time=300, verbose=True).fit(assignments)
+countsmat = msm.countsmat_
+transmat = msm.transmat_
+#print np.sum(countsmat)
+
+seq_path = '/home/shenglan/TryMSMbuilder/output/C/sequences'+'_s'+str(LOAD_STRIDE)+'.out'
+pickle.dump(sequences_all,open(seq_path,'wb'))
+
+assign_path = '/home/shenglan/TryMSMbuilder/output/C/KC_assign_c'+str(N_CLUSTER)+'_s'+str(LOAD_STRIDE)+'.out'
+pickle.dump(assignments,open(assign_path,'wb'))
+
+countsmat_path = '/home/shenglan/TryMSMbuilder/output/C/KC_countsmat_c'+str(N_CLUSTER)+'_s'+str(LOAD_STRIDE)+'.out'
+np.savetxt(countsmat_path,countsmat,fmt = '%8.4g')
+
+transmat_path = '/home/shenglan/TryMSMbuilder/output/C/KC_transmat_c'+str(N_CLUSTER)+'_s'+str(LOAD_STRIDE)+'.out'
+np.savetxt(transmat_path,transmat,fmt = '%10.4g')
+
+centers_path = '/home/shenglan/TryMSMbuilder/output/C/KC_centers_c'+str(N_CLUSTER)+'_s'+str(LOAD_STRIDE)+'.out'
+np.savetxt(centers_path,centers,fmt = '%10.4g')
 
 #try different lag_times
 msmts0 = {}
@@ -123,19 +121,19 @@ for n in n_states:
     print('-------------------')
 
 
-# #----------------------------------------------------------------------------------
-# # Visualization of data
-# #----------------------------------------------------------------------------------
-# # fig5 = plt.figure(figsize=(14,3))
-# # 
-# # plt.plot(assignments[0],'r.',alpha = 0.5)
-# # plt.plot(assignments[1],'b.',alpha = 0.5)
-# # plt.plot(assignments[2],'g.',alpha = 0.5)
-# # plt.xlabel('Frame')
-# # plt.ylabel('Cluster number')
-# # plt.title('cluster numbers, condition B')
-# # plt.savefig('/home/shenglan/TryMSMbuilder/output/fig5.png')
-# # plt.close(fig5)
+#----------------------------------------------------------------------------------
+# Visualization of data
+#----------------------------------------------------------------------------------
+# fig5 = plt.figure(figsize=(14,3))
+# 
+# plt.plot(assignments[0],'r.',alpha = 0.5)
+# plt.plot(assignments[1],'b.',alpha = 0.5)
+# plt.plot(assignments[2],'g.',alpha = 0.5)
+# plt.xlabel('Frame')
+# plt.ylabel('Cluster number')
+# plt.title('cluster numbers, condition B')
+# plt.savefig('/home/shenglan/TryMSMbuilder/output/fig5.png')
+# plt.close(fig5)
 # 
 #----------------------------------------------------------------------------------
 fig4 = plt.figure(figsize=(18,5))
