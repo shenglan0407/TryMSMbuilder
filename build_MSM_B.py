@@ -114,8 +114,8 @@ for n in n_states:
     msmts0[n] = []
     msmts1[n] = []
     msmts2[n] = []
+    assignments = KCenters(n_clusters=n).fit_predict(sequences_all)
     for lag_time in lag_times:
-        assignments = KCenters(n_clusters=n).fit_predict(sequences_all)
         msm = MarkovStateModel(lag_time=lag_time, verbose=False).fit(assignments)
         timescales = msm.timescales_
         msmts0[n].append(timescales[0])
