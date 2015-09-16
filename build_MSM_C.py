@@ -84,6 +84,32 @@ countsmat = msm.countsmat_
 transmat = msm.transmat_
 #print np.sum(countsmat)
 
+#try different lag_times
+msmts0 = {}
+msmts1 = {}
+msmts2 = {}
+lag_times = [10,20,30,40,50,60,80,100,120,140]
+n_states = [500]
+
+for n in n_states:
+    msmts0[n] = []
+    msmts1[n] = []
+    msmts2[n] = []
+    for lag_time in lag_times:
+        this_assign = KCenters(n_clusters=n).fit_predict(sequences_all)
+        msm = MarkovStateModel(lag_time=lag_time, verbose=False).fit(this_assign)
+        timescales = msm.timescales_
+        msmts0[n].append(timescales[0])
+        msmts1[n].append(timescales[1])
+        msmts2[n].append(timescales[2])
+        print('n_states=%d\tlag_time=%.1f\ttimescales=%s (ns)' % (n, lag_time*time_step, np.array(timescales[0:3])*time_step))
+    print('-------------------')
+
+
+#----------------------------------------------------------------------------------
+# Save data
+#----------------------------------------------------------------------------------
+
 seq_path = '/home/shenglan/TryMSMbuilder/output/C/sequences'+'_s'+str(LOAD_STRIDE)+'.out'
 pickle.dump(sequences_all,open(seq_path,'wb'))
 
@@ -99,27 +125,11 @@ np.savetxt(transmat_path,transmat,fmt = '%10.4g')
 centers_path = '/home/shenglan/TryMSMbuilder/output/C/KC_centers_c'+str(N_CLUSTER)+'_s'+str(LOAD_STRIDE)+'.out'
 np.savetxt(centers_path,centers,fmt = '%10.4g')
 
-#try different lag_times
-msmts0 = {}
-msmts1 = {}
-msmts2 = {}
-lag_times = [10,20,30,40,50,60,80,100,120,140]
-n_states = [500]
-
-for n in n_states:
-    msmts0[n] = []
-    msmts1[n] = []
-    msmts2[n] = []
-    for lag_time in lag_times:
-        assignments = KCenters(n_clusters=n).fit_predict(sequences_all)
-        msm = MarkovStateModel(lag_time=lag_time, verbose=False).fit(assignments)
-        timescales = msm.timescales_
-        msmts0[n].append(timescales[0])
-        msmts1[n].append(timescales[1])
-        msmts2[n].append(timescales[2])
-        print('n_states=%d\tlag_time=%.1f\ttimescales=%s (ns)' % (n, lag_time*time_step, np.array(timescales[0:3])*time_step))
-    print('-------------------')
-
+#----------------------------------------------------------------------------------
+# Convert to pdb
+#----------------------------------------------------------------------------------
+pdb_path = '/home/shenglan/TryMSMbuilder/output/C/KC_c'+str(N_CLUSTER)+'_s'+str(LOAD_STRIDE)+'.pdb'
+util.convert_sequences_to_pdb(seq_path,assign_path,pdb_path)
 
 #----------------------------------------------------------------------------------
 # Visualization of data
@@ -147,7 +157,7 @@ for i, n in enumerate(n_states):
     plt.xlabel('Lag Time (ns)')
     plt.title('%d states' % n)
 
-plt.savefig('/home/shenglan/TryMSMbuilder/output/lagtime_ts1.png')
+plt.savefig('/home/shenglan/TryMSMbuilder/output/C/lagtime_ts1.png')
 plt.close(fig4)
 
 #----------------------------------------------------------------------------------
@@ -162,7 +172,7 @@ for i, n in enumerate(n_states):
     plt.xlabel('Lag Time (ns)')
     plt.title('%d states' % n)
 
-plt.savefig('/home/shenglan/TryMSMbuilder/output/lagtime_ts2.png')
+plt.savefig('/home/shenglan/TryMSMbuilder/output/C/lagtime_ts2.png')
 plt.close(fig6)
 
 #----------------------------------------------------------------------------------
@@ -177,7 +187,7 @@ for i, n in enumerate(n_states):
     plt.xlabel('Lag Time (ns)')
     plt.title('%d states' % n)
 
-plt.savefig('/home/shenglan/TryMSMbuilder/output/lagtime_ts3.png')
+plt.savefig('/home/shenglan/TryMSMbuilder/output/C/lagtime_ts3.png')
 plt.close(fig7)
 
 #----------------------------------------------------------------------------------
