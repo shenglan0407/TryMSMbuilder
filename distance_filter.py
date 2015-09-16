@@ -126,7 +126,7 @@ for this_seq,this_assign in zip(sequences_all,assignments):
     for ii in range(atom_num):
         atom_count = atom_count + 1
         outfile.write("%6s%5d %4s %3s %1s%4d%1s   %8.3f%8.3f%8.3f%6.2f%6.2f          %2s  \n" % 
-        ('HETATM', ii+1,'N','ALP',this_assign[ii],atom_count,'D'
+        ('HETATM', ii+1,'N','ALP',this_assign[ii],ii+1,'D'
         ,this_seq[ii,0]*10,this_seq[ii,1]*10,this_seq[ii,2]*10, 1.0, 0.0,'N')) 
         #the factor of 10 multiplied to the coordinate is a conversion from nm to angstrom, to match the .mae file provided by DesRes
     
