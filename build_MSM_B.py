@@ -107,7 +107,7 @@ time_step = util.calc_time_step(times_path,stride = LOAD_STRIDE)
 msmts0 = {}
 msmts1 = {}
 msmts2 = {}
-lag_times = [10,100,200,300,400,450,500]
+lag_times = [10,100,200,250,275,300,325,350,375]
 n_states = [5000]
 
 for n in n_states:
