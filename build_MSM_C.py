@@ -33,7 +33,7 @@ dir_top = '/home/shenglan/topologies'
 times_path = parent_dir+run_dirs[0]+'/'+run_dirs[0].split('/')[-1]+'_times.csv'
 
 LOAD_STRIDE = 10
-N_CLUSTER = 500
+N_CLUSTER = 1500
 
 #load list of mdtraj objects
 simulations = []
@@ -44,7 +44,7 @@ for this_run_dir in run_dirs:
 inds_N =[] #indices of N atom
 atoms_to_track =['N']
 ligands = ['ALP%d'%(ii+1) for ii in range(10)]
-print ligands
+
 
 for ligand in ligands:
     iis = [atom.index for atom in simulations[0][0].topology.chain(0).atoms if atom.element.symbol in atoms_to_track
@@ -89,14 +89,14 @@ msmts0 = {}
 msmts1 = {}
 msmts2 = {}
 lag_times = [10,20,30,40,50,60,80,100,120,140]
-n_states = [500]
+n_states = [N_CLUSTER]
 
 for n in n_states:
     msmts0[n] = []
     msmts1[n] = []
     msmts2[n] = []
+    this_assign = KCenters(n_clusters=n).fit_predict(sequences_all)
     for lag_time in lag_times:
-        this_assign = KCenters(n_clusters=n).fit_predict(sequences_all)
         msm = MarkovStateModel(lag_time=lag_time, verbose=False).fit(this_assign)
         timescales = msm.timescales_
         msmts0[n].append(timescales[0])
