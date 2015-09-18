@@ -32,8 +32,8 @@ for ii in range(number_of_sims):
 dir_top = '/home/shenglan/topologies'
 times_path = parent_dir+run_dirs[0]+'/'+run_dirs[0].split('/')[-1]+'_times.csv'
 
-LOAD_STRIDE = None
-N_CLUSTER = 5000
+LOAD_STRIDE = 10
+N_CLUSTER = 3000
 
 #load list of mdtraj objects
 simulations = []
@@ -79,7 +79,7 @@ centers = clustering.cluster_centers_
 # print len(assignments)
 # print assignments[1].shape
 # 
-msm = MarkovStateModel(lag_time=3000, verbose=True).fit(assignments)
+msm = MarkovStateModel(lag_time=500, verbose=True).fit(assignments)
 countsmat = msm.countsmat_
 transmat = msm.transmat_
 #print np.sum(countsmat)
@@ -88,7 +88,7 @@ transmat = msm.transmat_
 msmts0 = {}
 msmts1 = {}
 msmts2 = {}
-lag_times = [10,500,1000,1500,2000,2500,3000,3500]
+lag_times = [10,50,100,150,200,250,300,350,400,500]
 n_states = [N_CLUSTER]
 
 for n in n_states:
