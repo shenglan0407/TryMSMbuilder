@@ -1,0 +1,1 @@
+from msmbuilder.tests import test_lumping as tlp
