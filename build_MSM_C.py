@@ -32,8 +32,8 @@ for ii in range(number_of_sims):
 dir_top = '/home/shenglan/topologies'
 times_path = parent_dir+run_dirs[0]+'/'+run_dirs[0].split('/')[-1]+'_times.csv'
 
-LOAD_STRIDE = 10
-N_CLUSTER = 1500
+LOAD_STRIDE = None
+N_CLUSTER = 5000
 
 #load list of mdtraj objects
 simulations = []
@@ -79,7 +79,7 @@ centers = clustering.cluster_centers_
 # print len(assignments)
 # print assignments[1].shape
 # 
-msm = MarkovStateModel(lag_time=300, verbose=True).fit(assignments)
+msm = MarkovStateModel(lag_time=3000, verbose=True).fit(assignments)
 countsmat = msm.countsmat_
 transmat = msm.transmat_
 #print np.sum(countsmat)
@@ -88,7 +88,7 @@ transmat = msm.transmat_
 msmts0 = {}
 msmts1 = {}
 msmts2 = {}
-lag_times = [10,20,30,40,50,60,80,100,120,140]
+lag_times = [10,500,1000,1500,2000,2500,3000,3500]
 n_states = [N_CLUSTER]
 
 for n in n_states:
@@ -97,8 +97,8 @@ for n in n_states:
     msmts2[n] = []
     this_assign = KCenters(n_clusters=n).fit_predict(sequences_all)
     for lag_time in lag_times:
-        msm = MarkovStateModel(lag_time=lag_time, verbose=False).fit(this_assign)
-        timescales = msm.timescales_
+        this_msm = MarkovStateModel(lag_time=lag_time, verbose=False).fit(this_assign)
+        timescales = this_msm.timescales_
         msmts0[n].append(timescales[0])
         msmts1[n].append(timescales[1])
         msmts2[n].append(timescales[2])
@@ -109,6 +109,8 @@ for n in n_states:
 #----------------------------------------------------------------------------------
 # Save data
 #----------------------------------------------------------------------------------
+msm_path = '/home/shenglan/TryMSMbuilder/output/C/KC_msm_c'+str(N_CLUSTER)+'_s'+str(LOAD_STRIDE)+'.out'
+pickle.dump(msm,open(msm_path,'wb'))
 
 seq_path = '/home/shenglan/TryMSMbuilder/output/C/sequences'+'_s'+str(LOAD_STRIDE)+'.out'
 pickle.dump(sequences_all,open(seq_path,'wb'))
