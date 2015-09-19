@@ -23,11 +23,11 @@ micro_msm = pickle.load(open(micro_msm_path,'rb'))
 
 micro_assign_path = '/home/shenglan/TryMSMbuilder/output/C/KC_assign_'+model
 micro_assign = pickle.load(open(micro_assign_path,'rb'))
-print micro_assign.shape
+#print micro_assign.shape
 
 print('there are %d microstates in msm' % micro_msm.n_states_)
 
-#pcca = PCCA.from_msm(micro_msm,50)
-#macro_assign = pcca.fit_transform(micro_assign)[0]
+pcca = PCCA.from_msm(micro_msm,2)
+macro_assign = pcca.fit_transform(micro_assign)[0]
 
-print micro_assign.shape
+print len(macro_assign)

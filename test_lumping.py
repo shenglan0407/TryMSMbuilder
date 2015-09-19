@@ -16,6 +16,8 @@ plt.close(fig1)
 print assign.shape
 print ref_macro_assign.shape
 
+print assign[0]
+
 test = PCCA(2).fit(assign)
 macro_assign = test.fit_transform(assign)[0]
 print test.n_states_
