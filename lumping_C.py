@@ -25,9 +25,19 @@ micro_assign_path = '/home/shenglan/TryMSMbuilder/output/C/KC_assign_'+model
 micro_assign = pickle.load(open(micro_assign_path,'rb'))
 #print micro_assign.shape
 
-print('there are %d microstates in msm' % micro_msm.n_states_)
+print('There are %d microstates in msm' % micro_msm.n_states_)
 
-pcca = PCCA.from_msm(micro_msm,2)
-macro_assign = pcca.fit_transform(micro_assign)[0]
+raw_clusters = []
+for this_assign in micro_assign:
+    raw_clusters.extend(np.unique(this_assign))
+raw_clusters = np.unique(np.array(raw_clusters))
+print('There are %d clusters in the original geometric clustering.'%len(raw_clusters))
+print np.min(raw_clusters)
+print np.max(raw_clusters)
 
-print len(macro_assign)
+raw_to_micro_mapping = micro_msm.mapping_
+# 
+# pcca = PCCA.from_msm(micro_msm,2)
+# macro_assign = pcca.fit_transform(micro_assign)[0]
+# 
+# print len(macro_assign)
