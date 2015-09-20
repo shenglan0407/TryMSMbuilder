@@ -32,11 +32,20 @@ for this_assign in micro_assign:
     raw_clusters.extend(np.unique(this_assign))
 raw_clusters = np.unique(np.array(raw_clusters))
 print('There are %d clusters in the original geometric clustering.'%len(raw_clusters))
-print np.min(raw_clusters)
-print np.max(raw_clusters)
+
 
 raw_to_micro_mapping = micro_msm.mapping_
-# 
+
+dummy_assign = 1308
+for ii in range(len(raw_clusters)):
+    if ii in raw_to_micro_mapping.keys():
+        pass
+    else:
+        raw_to_micro_mapping[ii] = dummy_assign
+        dummy_assign = dummy_assign+1
+
+
+
 # pcca = PCCA.from_msm(micro_msm,2)
 # macro_assign = pcca.fit_transform(micro_assign)[0]
 # 
