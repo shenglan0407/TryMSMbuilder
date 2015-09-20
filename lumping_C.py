@@ -10,6 +10,7 @@
 import numpy as np
 import pickle
 import matplotlib.pyplot as plt
+import copy
 
 from msmbuilder.lumping import PCCA, PCCAPlus
 from msmbuilder.msm import MarkovStateModel
@@ -24,7 +25,6 @@ micro_msm = pickle.load(open(micro_msm_path,'rb'))
 geo_assign_path = '/home/shenglan/TryMSMbuilder/output/C/KC_assign_'+model
 geo_assign = pickle.load(open(geo_assign_path,'rb'))
 #print geo_assign.shape
-print geo_assign[0][0]
 print('There are %d microstates in msm' % micro_msm.n_states_)
 
 raw_clusters = []
@@ -34,7 +34,7 @@ raw_clusters = np.unique(np.array(raw_clusters))
 print('There are %d clusters in the original geometric clustering.'%len(raw_clusters))
 
 
-raw_to_micro_mapping = micro_msm.mapping_
+raw_to_micro_mapping = copy.copy(micro_msm.mapping_)
 
 dummy_assign = 1308
 for ii in range(len(raw_clusters)):
@@ -43,9 +43,7 @@ for ii in range(len(raw_clusters)):
     else:
         raw_to_micro_mapping[ii] = dummy_assign
         dummy_assign = dummy_assign+1
-print raw_to_micro_mapping[geo_assign[0][0]]
-print geo_assign[0][0]
-
+        
 micro_assign = []
 
 for this_assign in geo_assign:
@@ -64,8 +62,26 @@ for this_assign, that_assign in zip(micro_assign,geo_assign):
             pass
         else:
             print ('mismatch %d, %d' % (this_item, that_item))
+
+partial_raw_to_micro_mapping = copy.copy(micro_msm.mapping_)
+partial_micro_assign = []
+for this_assign in geo_assign:
+    this_list = []
+    for this_item in this_assign:
+        try:
+            this_list.append(partial_raw_to_micro_mapping[this_item])
+        except KeyError:
+            pass
+    partial_micro_assign.append(this_list)
+    
+unique_assign = []
+for this_assign in partial_micro_assign:
+    unique_assign.extend(np.unique(this_assign))
+unique_assign = np.unique(np.array(unique_assign))
+
+
         
-# pcca = PCCA.from_msm(micro_msm,2)
-# macro_assign = pcca.fit_transform(geo_assign)[0]
+pcca = PCCA.from_msm(micro_msm,2)
+# macro_assign = pcca.fit_transform(partial_micro_assign)[0]
 # 
 # print len(macro_assign)
