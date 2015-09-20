@@ -79,9 +79,31 @@ for this_assign in partial_micro_assign:
     unique_assign.extend(np.unique(this_assign))
 unique_assign = np.unique(np.array(unique_assign))
 
+N_MACRO = 5
+pcca = PCCA.from_msm(micro_msm,N_MACRO)
+micro_to_macro_mapping = {}
+for ii in range(len(pcca.microstate_mapping_)):
+    micro_to_macro_mapping[ii] = pcca.microstate_mapping_[ii]
+    
+for ii in range(len(raw_clusters)):
+    if ii in micro_to_macro_mapping.keys():
+        pass
+    else:
+        micro_to_macro_mapping[ii] = N_MACRO
+    
+# assignments to macro states
+macro_assign = []
 
-        
-pcca = PCCA.from_msm(micro_msm,2)
-# macro_assign = pcca.fit_transform(partial_micro_assign)[0]
+for this_assign in geo_assign:
+    this_list = np.zeros(len(this_assign),dtype = int)
+    macro_assign.append(this_list)
+
+for nn in range(len(macro_assign)):
+    for ii in range(len(macro_assign[nn])):
+        macro_assign[nn][ii] = micro_to_macro_mapping[micro_assign[nn][ii]]
+
+print len(macro_assign[0])
+print len(geo_assign[0])
+# macro_assign = pcca.fit(partial_micro_assign)
 # 
-# print len(macro_assign)
+# print macro_assign
