@@ -20,12 +20,12 @@ from msmbuilder.msm import MarkovStateModel
 #-----------------------------------------------------------------------------
 # Code
 #-----------------------------------------------------------------------------
-LOAD_STRIDE = 10
-model = 'c2000_s'+str(LOAD_STRIDE)
-micro_msm_path = '/home/shenglan/TryMSMbuilder/output/C/KC_msm_'+model+'.out'
+LOAD_STRIDE = None
+model = 'c1000_s'+str(LOAD_STRIDE)
+micro_msm_path = '/home/shenglan/TryMSMbuilder/output/C/all_clusters/KC_msm_'+model+'.out'
 micro_msm = pickle.load(open(micro_msm_path,'rb'))
 
-geo_assign_path = '/home/shenglan/TryMSMbuilder/output/C/KC_assign_'+model+'.out'
+geo_assign_path = '/home/shenglan/TryMSMbuilder/output/C/all_clusters/KC_assign_'+model+'.out'
 geo_assign = pickle.load(open(geo_assign_path,'rb'))
 #print geo_assign.shape
 print('There are %d microstates in msm' % micro_msm.n_states_)
@@ -82,7 +82,7 @@ for this_assign in partial_micro_assign:
     unique_assign.extend(np.unique(this_assign))
 unique_assign = np.unique(np.array(unique_assign))
 
-N_MACRO = 5
+N_MACRO = 10
 pcca = PCCA.from_msm(micro_msm,N_MACRO)
 micro_to_macro_mapping = {}
 for ii in range(len(pcca.microstate_mapping_)):
@@ -106,16 +106,16 @@ for nn in range(len(macro_assign)):
     for ii in range(len(macro_assign[nn])):
         macro_assign[nn][ii] = micro_to_macro_mapping[micro_assign[nn][ii]]
 
-macro_assign_path = '/home/shenglan/TryMSMbuilder/output/C/KC_macroassign_c'+str(N_MACRO)+'_s'+str(LOAD_STRIDE)+'.out'
+macro_assign_path = '/home/shenglan/TryMSMbuilder/output/C/all_clusters/KC_macroassign_c'+str(N_MACRO)+'_s'+str(LOAD_STRIDE)+'.out'
 pickle.dump(macro_assign,open(macro_assign_path,'wb'))
 
-micro_assign_path = '/home/shenglan/TryMSMbuilder/output/C/KC_microassign_c'+str(N_MACRO)+'_s'+str(LOAD_STRIDE)+'.out'
+micro_assign_path = '/home/shenglan/TryMSMbuilder/output/C/all_clusters/KC_microassign_c'+str(N_MICRO)+'_s'+str(LOAD_STRIDE)+'.out'
 pickle.dump(micro_assign,open(micro_assign_path,'wb'))
 
-seq_path = '/home/shenglan/TryMSMbuilder/output/C/sequences_s'+str(LOAD_STRIDE)+'.out'
+seq_path = '/home/shenglan/TryMSMbuilder/output/C/all_clusters/sequences_s'+str(LOAD_STRIDE)+'.out'
 
-save_macro_pdb_path = '/home/shenglan/TryMSMbuilder/output/C/KC_macroassign_c'+str(N_MACRO)+'_s'+str(LOAD_STRIDE)+'.pdb'
-save_micro_pdb_path = '/home/shenglan/TryMSMbuilder/output/C/KC_microassign_c'+str(N_MICRO)+'_s'+str(LOAD_STRIDE)+'.pdb'
+save_macro_pdb_path = '/home/shenglan/TryMSMbuilder/output/C/all_clusters/KC_macroassign_c'+str(N_MACRO)+'_s'+str(LOAD_STRIDE)+'.pdb'
+save_micro_pdb_path = '/home/shenglan/TryMSMbuilder/output/C/all_clusters/KC_microassign_c'+str(N_MICRO)+'_s'+str(LOAD_STRIDE)+'.pdb'
 
 util.convert_sequences_to_pdb(seq_path,macro_assign_path,save_macro_pdb_path)
 util.convert_sequences_to_pdb(seq_path,micro_assign_path,save_micro_pdb_path)
