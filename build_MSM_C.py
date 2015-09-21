@@ -83,7 +83,7 @@ centers = clustering.cluster_centers_
 # print len(assignments)
 # print assignments[1].shape
 # 
-msm = MarkovStateModel(lag_time=500, verbose=True).fit(assignments)
+msm = MarkovStateModel(lag_time=500, ergodic_cutoff = 'off',verbose=True).fit(assignments)
 countsmat = msm.countsmat_
 transmat = msm.transmat_
 #print np.sum(countsmat)
@@ -99,7 +99,7 @@ for n in n_states:
     msmts0[n] = []
     msmts1[n] = []
     msmts2[n] = []
-    #this_assign = KCenters(n_clusters=n).fit_predict(sequences_all)
+
     for lag_time in lag_times:
         this_msm = MarkovStateModel(lag_time=lag_time, ergodic_cutoff = 'off', verbose=False).fit(assignments)
         timescales = this_msm.timescales_
