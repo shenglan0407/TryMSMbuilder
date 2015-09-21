@@ -12,17 +12,20 @@ import pickle
 import matplotlib.pyplot as plt
 import copy
 
+import utilities as util
+
 from msmbuilder.lumping import PCCA, PCCAPlus
 from msmbuilder.msm import MarkovStateModel
 
 #-----------------------------------------------------------------------------
 # Code
 #-----------------------------------------------------------------------------
-model = 'c2000_s10.out'
-micro_msm_path = '/home/shenglan/TryMSMbuilder/output/C/KC_msm_'+model
+LOAD_STRIDE = 10
+model = 'c2000_s'+str(LOAD_STRIDE)
+micro_msm_path = '/home/shenglan/TryMSMbuilder/output/C/KC_msm_'+model+'.out'
 micro_msm = pickle.load(open(micro_msm_path,'rb'))
 
-geo_assign_path = '/home/shenglan/TryMSMbuilder/output/C/KC_assign_'+model
+geo_assign_path = '/home/shenglan/TryMSMbuilder/output/C/KC_assign_'+model+'.out'
 geo_assign = pickle.load(open(geo_assign_path,'rb'))
 #print geo_assign.shape
 print('There are %d microstates in msm' % micro_msm.n_states_)
@@ -35,8 +38,8 @@ print('There are %d clusters in the original geometric clustering.'%len(raw_clus
 
 
 raw_to_micro_mapping = copy.copy(micro_msm.mapping_)
-
-dummy_assign = 1308
+N_MICRO = len(raw_to_micro_mapping)
+dummy_assign = N_MICRO
 for ii in range(len(raw_clusters)):
     if ii in raw_to_micro_mapping.keys():
         pass
@@ -84,7 +87,8 @@ pcca = PCCA.from_msm(micro_msm,N_MACRO)
 micro_to_macro_mapping = {}
 for ii in range(len(pcca.microstate_mapping_)):
     micro_to_macro_mapping[ii] = pcca.microstate_mapping_[ii]
-    
+
+# for n macrostates, any frame that does not belong to any microstate and thus macrostate is labeled to be in the nth macrostate
 for ii in range(len(raw_clusters)):
     if ii in micro_to_macro_mapping.keys():
         pass
@@ -102,8 +106,21 @@ for nn in range(len(macro_assign)):
     for ii in range(len(macro_assign[nn])):
         macro_assign[nn][ii] = micro_to_macro_mapping[micro_assign[nn][ii]]
 
-print len(macro_assign[0])
-print len(geo_assign[0])
+macro_assign_path = '/home/shenglan/TryMSMbuilder/output/C/KC_macroassign_c'+str(N_MACRO)+'_s'+str(LOAD_STRIDE)+'.out'
+pickle.dump(macro_assign,open(macro_assign_path,'wb'))
+
+micro_assign_path = '/home/shenglan/TryMSMbuilder/output/C/KC_microassign_c'+str(N_MACRO)+'_s'+str(LOAD_STRIDE)+'.out'
+pickle.dump(micro_assign,open(micro_assign_path,'wb'))
+
+seq_path = '/home/shenglan/TryMSMbuilder/output/C/sequences_s'+str(LOAD_STRIDE)+'.out'
+
+save_macro_pdb_path = '/home/shenglan/TryMSMbuilder/output/C/KC_macroassign_c'+str(N_MACRO)+'_s'+str(LOAD_STRIDE)+'.pdb'
+save_micro_pdb_path = '/home/shenglan/TryMSMbuilder/output/C/KC_microassign_c'+str(N_MICRO)+'_s'+str(LOAD_STRIDE)+'.pdb'
+
+util.convert_sequences_to_pdb(seq_path,macro_assign_path,save_macro_pdb_path)
+util.convert_sequences_to_pdb(seq_path,micro_assign_path,save_micro_pdb_path)
+
+
 # macro_assign = pcca.fit(partial_micro_assign)
 # 
 # print macro_assign
