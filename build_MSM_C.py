@@ -10,13 +10,17 @@
 import numpy as np
 import pickle
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 from mpl_toolkits.mplot3d import Axes3D
 import utilities as util
 
 from msmbuilder.cluster import KCenters
 from msmbuilder.cluster import KMedoids
 from msmbuilder.msm import MarkovStateModel
-
+#-----------------------------------------------------------------------------
+# matplotlib settings
+#-----------------------------------------------------------------------------
+mpl.rcParams['font.size'] = 24.0
 #-----------------------------------------------------------------------------
 # Code
 #-----------------------------------------------------------------------------
@@ -33,7 +37,7 @@ dir_top = '/home/shenglan/topologies'
 times_path = parent_dir+run_dirs[0]+'/'+run_dirs[0].split('/')[-1]+'_times.csv'
 
 LOAD_STRIDE = 10
-N_CLUSTER = 3000
+N_CLUSTER = 2000
 
 #load list of mdtraj objects
 simulations = []
@@ -95,9 +99,9 @@ for n in n_states:
     msmts0[n] = []
     msmts1[n] = []
     msmts2[n] = []
-    this_assign = KCenters(n_clusters=n).fit_predict(sequences_all)
+    #this_assign = KCenters(n_clusters=n).fit_predict(sequences_all)
     for lag_time in lag_times:
-        this_msm = MarkovStateModel(lag_time=lag_time, verbose=False).fit(this_assign)
+        this_msm = MarkovStateModel(lag_time=lag_time, ergodic_cutoff = 'off', verbose=False).fit(assignments)
         timescales = this_msm.timescales_
         msmts0[n].append(timescales[0])
         msmts1[n].append(timescales[1])
@@ -148,7 +152,7 @@ util.convert_sequences_to_pdb(seq_path,assign_path,pdb_path)
 # plt.close(fig5)
 # 
 #----------------------------------------------------------------------------------
-fig4 = plt.figure(figsize=(18,5))
+fig4 = plt.figure(figsize=(18,8))
 plt.title('lag time vs relaxation time condition B')
 
 for i, n in enumerate(n_states):
@@ -163,7 +167,7 @@ plt.savefig('/home/shenglan/TryMSMbuilder/output/C/lagtime_ts1.png')
 plt.close(fig4)
 
 #----------------------------------------------------------------------------------
-fig6 = plt.figure(figsize=(18,5))
+fig6 = plt.figure(figsize=(18,8))
 plt.title('lag time vs relaxation time condition B')
 
 for i, n in enumerate(n_states):
@@ -178,7 +182,7 @@ plt.savefig('/home/shenglan/TryMSMbuilder/output/C/lagtime_ts2.png')
 plt.close(fig6)
 
 #----------------------------------------------------------------------------------
-fig7 = plt.figure(figsize=(18,5))
+fig7 = plt.figure(figsize=(18,8))
 plt.title('lag time vs relaxation time condition B')
 
 for i, n in enumerate(n_states):
