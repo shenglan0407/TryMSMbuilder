@@ -20,8 +20,8 @@ from msmbuilder.msm import MarkovStateModel
 #-----------------------------------------------------------------------------
 # Code
 #-----------------------------------------------------------------------------
-LOAD_STRIDE = None
-model = 'c1000_s'+str(LOAD_STRIDE)
+LOAD_STRIDE = 10
+model = 'c1300_s'+str(LOAD_STRIDE)
 micro_msm_path = '/home/shenglan/TryMSMbuilder/output/C/all_clusters/KC_msm_'+model+'.out'
 micro_msm = pickle.load(open(micro_msm_path,'rb'))
 
@@ -82,7 +82,7 @@ for this_assign in partial_micro_assign:
     unique_assign.extend(np.unique(this_assign))
 unique_assign = np.unique(np.array(unique_assign))
 
-N_MACRO = 10
+N_MACRO = 5
 pcca = PCCA.from_msm(micro_msm,N_MACRO)
 micro_to_macro_mapping = {}
 for ii in range(len(pcca.microstate_mapping_)):

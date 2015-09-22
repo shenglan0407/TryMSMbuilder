@@ -36,8 +36,9 @@ for ii in range(number_of_sims):
 dir_top = '/home/shenglan/topologies'
 times_path = parent_dir+run_dirs[0]+'/'+run_dirs[0].split('/')[-1]+'_times.csv'
 
-LOAD_STRIDE = None
-N_CLUSTER = 2000
+LOAD_STRIDE = 10
+N_CLUSTER = 1300
+PRIOR = 0.0#1.0/N_CLUSTER
 
 #load list of mdtraj objects
 simulations = []
@@ -83,8 +84,9 @@ centers = clustering.cluster_centers_
 # print len(assignments)
 # print assignments[1].shape
 # 
-msm = MarkovStateModel(lag_time=5000, reversible_type = 'transpose', 
-ergodic_cutoff = 'off', sliding_window = True, prior_counts = 1.0/5000,verbose=True).fit(assignments)
+msm = MarkovStateModel(lag_time=80, reversible_type = 'transpose', 
+ergodic_cutoff = 'off'
+,verbose=True).fit(assignments)
 countsmat = msm.countsmat_
 transmat = msm.transmat_
 print countsmat.shape
@@ -93,7 +95,7 @@ print countsmat.shape
 msmts0 = {}
 msmts1 = {}
 msmts2 = {}
-lag_times = [100,500,1000,1500,2000,2500,3000,3500,4000,5000]
+lag_times = [1,5,10,20,30,40,50,60,70,80,90,100]#,150,200,250,300]
 n_states = [N_CLUSTER]
 
 for n in n_states:
@@ -103,7 +105,8 @@ for n in n_states:
 
     for lag_time in lag_times:
         this_msm = MarkovStateModel(lag_time=lag_time, reversible_type = 'transpose', 
-        ergodic_cutoff = 'off', sliding_window = True, prior_counts = 1.0/lag_time, verbose=False).fit(assignments)
+        ergodic_cutoff = 'off'
+        , verbose=False).fit(assignments)
         timescales = this_msm.timescales_
         msmts0[n].append(timescales[0])
         msmts1[n].append(timescales[1])
