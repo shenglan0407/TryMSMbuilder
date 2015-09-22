@@ -83,7 +83,7 @@ centers = clustering.cluster_centers_
 # print len(assignments)
 # print assignments[1].shape
 # 
-msm = MarkovStateModel(lag_time=4000, sliding_window = True, verbose=True).fit(assignments)
+msm = MarkovStateModel(lag_time=5000, sliding_window = True, verbose=True).fit(assignments)
 countsmat = msm.countsmat_
 transmat = msm.transmat_
 print countsmat.shape
@@ -92,7 +92,7 @@ print countsmat.shape
 msmts0 = {}
 msmts1 = {}
 msmts2 = {}
-lag_times = [100,500,1000,1500,2000,2500,3000,3500,4000]
+lag_times = [100,500,1000,1500,2000,2500,3000,3500,4000,5000]
 n_states = [N_CLUSTER]
 
 for n in n_states:
