@@ -45,7 +45,7 @@ for ii in range(len(raw_clusters)):
         pass
     else:
         raw_to_micro_mapping[ii] = dummy_assign
-        dummy_assign = dummy_assign+1
+        #dummy_assign = dummy_assign+1
         
 micro_assign = []
 
