@@ -50,4 +50,24 @@ for ligand in ligands:
           and str(atom.residue)==ligand]
     inds_N.append(iis)
     
-print inds_N
+# track ASP 113
+res_to_track = ['ASP113']
+target_res = []
+for residue in traj.topology.residues:
+    if str(residue) in res_to_track:
+        if str(residue) in str(target_res):
+            pass
+        else:
+            target_res.append(residue)
+
+ind_res = []
+for this_res in target_res:
+    ii = [atom.index for atom in this_res.atoms if atom.name in ['OD1']]
+    ind_res.append(ii)
+atom_pairs = []
+for this_lig in inds_N:
+    for lig_atom,rec_atom in zip(this_lig,ind_res[0]):
+        atom_pairs.append([lig_atom,rec_atom])
+atom_pairs = np.array(atom_pairs)
+print 'We are tracking distances between the following pairs of atoms:'     
+print atom_pairs
