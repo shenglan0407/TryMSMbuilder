@@ -37,5 +37,17 @@ sim_path = '/scratch/PI/rondror/MD_simulations/amber/b2AR_ligand_binding/alpreno
 sim_file = 'b2AR_ALP_Prod1to9_skip1_reimaged.nc'
 topology = '/scratch/PI/rondror/MD_simulations/amber/b2AR_ligand_binding/alprenolol/ten_ligands/system.psf'
 
-traj = md.load(sim_path+sim_file,top = topology, stride = 10)
-print traj
+# load simulation as mdtraj object
+traj = md.load(sim_path+sim_file,top = topology, stride = 100)
+
+# track atoms in ligands
+inds_N =[] #indices of N atom
+atoms_to_track =['N']
+ligands = ['ALP%d'%(ii+1) for ii in range(10)]
+
+for ligand in ligands:
+    iis = [atom.index for atom in traj.topology.atoms if atom.element.symbol in atoms_to_track
+          and str(atom.residue)==ligand]
+    inds_N.append(iis)
+    
+print inds_N
