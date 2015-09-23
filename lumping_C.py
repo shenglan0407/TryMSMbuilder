@@ -53,7 +53,8 @@ for this_assign in geo_assign:
     this_list = np.zeros(len(this_assign),dtype = int)
     micro_assign.append(this_list)
     
-#map assignments for microstates    
+# map assignments for microstates. it contains all the points. points not in microstates 
+# are given a dummy_assign state id.
 for nn in range(len(micro_assign)):
     for ii in range(len(micro_assign[nn])):
         micro_assign[nn][ii] = raw_to_micro_mapping[geo_assign[nn][ii]]
@@ -67,6 +68,7 @@ for this_assign, that_assign in zip(micro_assign,geo_assign):
         else:
             print ('mismatch %d, %d' % (this_item, that_item))
 
+#this assignment exclude points that are not in the msm microstates
 partial_raw_to_micro_mapping = copy.copy(micro_msm.mapping_)
 partial_micro_assign = []
 for this_assign in geo_assign:
