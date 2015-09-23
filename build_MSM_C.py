@@ -92,160 +92,160 @@ print atom_pairs
 
 distances = []
 for this_sim in simulations:
-    this_dist = []
-    for this_traj in this_sim:
-        
-        this_dist.extend(md_dist.compute_distances(this_traj,atom_pairs))
-    this_dist = np.array(this_dist)
-    distances.append(this_dist)
+    for this_atom_pair in atom_pairs:
+        this_lig = []
+        for this_traj in this_sim: 
+            this_lig.extend(md_dist.compute_distances(this_traj,[this_atom_pair]))
+        distances.append(this_lig)
+print len(distances[-1])
 
 dist_path = '/home/shenglan/TryMSMbuilder/output/C/all_clusters/dist_to_binding'+'_s'+str(LOAD_STRIDE)+'.out'
 pickle.dump(distances,open(dist_path,'wb'))
     
-
-
-#sequences of coordinates of ligands
-total_frames = 0
-sequences_all = []
-for this_sim in simulations:
-    if use_COM:
-        this_seq = util.featurize_RawPos(inds_all,this_sim,average = True)
-    else:
-        this_seq = util.featurize_RawPos(inds_N,this_sim)
-    total_frames = this_seq[0].shape[0]*10+total_frames
-    sequences_all.extend(this_seq)
-print('the total number of conformations we are clustering is %d.' % total_frames)
-
-
-
-time_step = util.calc_time_step(times_path,stride = LOAD_STRIDE)
- 
-clustering = KCenters(n_clusters = N_CLUSTER)
-assignments = clustering.fit_predict(sequences_all)
-centers = clustering.cluster_centers_
 # 
-# print len(assignments)
-# print assignments[1].shape
 # 
-msm = MarkovStateModel(lag_time=80, reversible_type = 'transpose', 
-ergodic_cutoff = 'off'
-,verbose=True).fit(assignments)
-countsmat = msm.countsmat_
-transmat = msm.transmat_
-print countsmat.shape
-
-#try different lag_times
-msmts0 = {}
-msmts1 = {}
-msmts2 = {}
-lag_times = [1,5,10,20,30,40,50,60,70,80,90,100]#,150,200,250,300]
-n_states = [N_CLUSTER]
-
-for n in n_states:
-    msmts0[n] = []
-    msmts1[n] = []
-    msmts2[n] = []
-
-    for lag_time in lag_times:
-        this_msm = MarkovStateModel(lag_time=lag_time, reversible_type = 'transpose', 
-        ergodic_cutoff = 'off'
-        , verbose=False).fit(assignments)
-        timescales = this_msm.timescales_
-        msmts0[n].append(timescales[0])
-        msmts1[n].append(timescales[1])
-        msmts2[n].append(timescales[2])
-        print('n_states=%d\tlag_time=%.1f\ttimescales=%s (ns)' % (n, lag_time*time_step, np.array(timescales[0:3])*time_step))
-    print('-------------------')
-
-
-#----------------------------------------------------------------------------------
-# Save data
-#----------------------------------------------------------------------------------
-msm_path = '/home/shenglan/TryMSMbuilder/output/C/all_clusters/KC_msm_c'+str(N_CLUSTER)+'_s'+str(LOAD_STRIDE)+'.out'
-pickle.dump(msm,open(msm_path,'wb'))
-
-seq_path = '/home/shenglan/TryMSMbuilder/output/C/all_clusters/sequences'+'_s'+str(LOAD_STRIDE)+'.out'
-pickle.dump(sequences_all,open(seq_path,'wb'))
-
-dist_path = '/home/shenglan/TryMSMbuilder/output/C/all_clusters/dist_to_binding'+'_s'+str(LOAD_STRIDE)+'.out'
-pickle.dump(distances,open(dist_path,'wb'))
-
-assign_path = '/home/shenglan/TryMSMbuilder/output/C/all_clusters/KC_assign_c'+str(N_CLUSTER)+'_s'+str(LOAD_STRIDE)+'.out'
-pickle.dump(assignments,open(assign_path,'wb'))
-
-countsmat_path = '/home/shenglan/TryMSMbuilder/output/C/all_clusters/KC_countsmat_c'+str(N_CLUSTER)+'_s'+str(LOAD_STRIDE)+'.out'
-np.savetxt(countsmat_path,countsmat,fmt = '%8.4g')
-
-transmat_path = '/home/shenglan/TryMSMbuilder/output/C/all_clusters/KC_transmat_c'+str(N_CLUSTER)+'_s'+str(LOAD_STRIDE)+'.out'
-np.savetxt(transmat_path,transmat,fmt = '%10.4g')
-
-centers_path = '/home/shenglan/TryMSMbuilder/output/C/all_clusters/KC_centers_c'+str(N_CLUSTER)+'_s'+str(LOAD_STRIDE)+'.out'
-np.savetxt(centers_path,centers,fmt = '%10.4g')
-
-#----------------------------------------------------------------------------------
-# Convert to pdb
-#----------------------------------------------------------------------------------
-pdb_path = '/home/shenglan/TryMSMbuilder/output/C/all_clusters/KC_c'+str(N_CLUSTER)+'_s'+str(LOAD_STRIDE)+'.pdb'
-util.convert_sequences_to_pdb(seq_path,assign_path,pdb_path)
-
-#----------------------------------------------------------------------------------
-# Visualization of data
-#----------------------------------------------------------------------------------
-# fig5 = plt.figure(figsize=(14,3))
+# #sequences of coordinates of ligands
+# total_frames = 0
+# sequences_all = []
+# for this_sim in simulations:
+#     if use_COM:
+#         this_seq = util.featurize_RawPos(inds_all,this_sim,average = True)
+#     else:
+#         this_seq = util.featurize_RawPos(inds_N,this_sim)
+#     total_frames = this_seq[0].shape[0]*10+total_frames
+#     sequences_all.extend(this_seq)
+# print('the total number of conformations we are clustering is %d.' % total_frames)
 # 
-# plt.plot(assignments[0],'r.',alpha = 0.5)
-# plt.plot(assignments[1],'b.',alpha = 0.5)
-# plt.plot(assignments[2],'g.',alpha = 0.5)
-# plt.xlabel('Frame')
-# plt.ylabel('Cluster number')
-# plt.title('cluster numbers, condition B')
-# plt.savefig('/home/shenglan/TryMSMbuilder/output/fig5.png')
-# plt.close(fig5)
 # 
-#----------------------------------------------------------------------------------
-fig4 = plt.figure(figsize=(18,8))
-plt.title('lag time vs relaxation time condition B')
-
-for i, n in enumerate(n_states):
-    plt.subplot(1,len(n_states),1+i)
-    plt.plot(np.array(lag_times)*time_step, np.array(msmts0[n])*time_step)
-    if i == 0:
-        plt.ylabel('Relaxation Timescale 1(ns)')
-    plt.xlabel('Lag Time (ns)')
-    plt.title('%d states' % n)
-
-plt.savefig('/home/shenglan/TryMSMbuilder/output/C/all_clusters/lagtime_ts1.png')
-plt.close(fig4)
-
-#----------------------------------------------------------------------------------
-fig6 = plt.figure(figsize=(18,8))
-plt.title('lag time vs relaxation time condition B')
-
-for i, n in enumerate(n_states):
-    plt.subplot(1,len(n_states),1+i)
-    plt.plot(np.array(lag_times)*time_step, np.array(msmts1[n])*time_step)
-    if i == 0:
-        plt.ylabel('Relaxation Timescale 2(ns)')
-    plt.xlabel('Lag Time (ns)')
-    plt.title('%d states' % n)
-
-plt.savefig('/home/shenglan/TryMSMbuilder/output/C/all_clusters/lagtime_ts2.png')
-plt.close(fig6)
-
-#----------------------------------------------------------------------------------
-fig7 = plt.figure(figsize=(18,8))
-plt.title('lag time vs relaxation time condition B')
-
-for i, n in enumerate(n_states):
-    plt.subplot(1,len(n_states),1+i)
-    plt.plot(np.array(lag_times)*time_step, np.array(msmts2[n])*time_step)
-    if i == 0:
-        plt.ylabel('Relaxation Timescale 3(ns)')
-    plt.xlabel('Lag Time (ns)')
-    plt.title('%d states' % n)
-
-plt.savefig('/home/shenglan/TryMSMbuilder/output/C/all_clusters/lagtime_ts3.png')
-plt.close(fig7)
+# 
+# time_step = util.calc_time_step(times_path,stride = LOAD_STRIDE)
+#  
+# clustering = KCenters(n_clusters = N_CLUSTER)
+# assignments = clustering.fit_predict(sequences_all)
+# centers = clustering.cluster_centers_
+# # 
+# # print len(assignments)
+# # print assignments[1].shape
+# # 
+# msm = MarkovStateModel(lag_time=80, reversible_type = 'transpose', 
+# ergodic_cutoff = 'off'
+# ,verbose=True).fit(assignments)
+# countsmat = msm.countsmat_
+# transmat = msm.transmat_
+# print countsmat.shape
+# 
+# #try different lag_times
+# msmts0 = {}
+# msmts1 = {}
+# msmts2 = {}
+# lag_times = [1,5,10,20,30,40,50,60,70,80,90,100]#,150,200,250,300]
+# n_states = [N_CLUSTER]
+# 
+# for n in n_states:
+#     msmts0[n] = []
+#     msmts1[n] = []
+#     msmts2[n] = []
+# 
+#     for lag_time in lag_times:
+#         this_msm = MarkovStateModel(lag_time=lag_time, reversible_type = 'transpose', 
+#         ergodic_cutoff = 'off'
+#         , verbose=False).fit(assignments)
+#         timescales = this_msm.timescales_
+#         msmts0[n].append(timescales[0])
+#         msmts1[n].append(timescales[1])
+#         msmts2[n].append(timescales[2])
+#         print('n_states=%d\tlag_time=%.1f\ttimescales=%s (ns)' % (n, lag_time*time_step, np.array(timescales[0:3])*time_step))
+#     print('-------------------')
+# 
+# 
+# #----------------------------------------------------------------------------------
+# # Save data
+# #----------------------------------------------------------------------------------
+# msm_path = '/home/shenglan/TryMSMbuilder/output/C/all_clusters/KC_msm_c'+str(N_CLUSTER)+'_s'+str(LOAD_STRIDE)+'.out'
+# pickle.dump(msm,open(msm_path,'wb'))
+# 
+# seq_path = '/home/shenglan/TryMSMbuilder/output/C/all_clusters/sequences'+'_s'+str(LOAD_STRIDE)+'.out'
+# pickle.dump(sequences_all,open(seq_path,'wb'))
+# 
+# dist_path = '/home/shenglan/TryMSMbuilder/output/C/all_clusters/dist_to_binding'+'_s'+str(LOAD_STRIDE)+'.out'
+# pickle.dump(distances,open(dist_path,'wb'))
+# 
+# assign_path = '/home/shenglan/TryMSMbuilder/output/C/all_clusters/KC_assign_c'+str(N_CLUSTER)+'_s'+str(LOAD_STRIDE)+'.out'
+# pickle.dump(assignments,open(assign_path,'wb'))
+# 
+# countsmat_path = '/home/shenglan/TryMSMbuilder/output/C/all_clusters/KC_countsmat_c'+str(N_CLUSTER)+'_s'+str(LOAD_STRIDE)+'.out'
+# np.savetxt(countsmat_path,countsmat,fmt = '%8.4g')
+# 
+# transmat_path = '/home/shenglan/TryMSMbuilder/output/C/all_clusters/KC_transmat_c'+str(N_CLUSTER)+'_s'+str(LOAD_STRIDE)+'.out'
+# np.savetxt(transmat_path,transmat,fmt = '%10.4g')
+# 
+# centers_path = '/home/shenglan/TryMSMbuilder/output/C/all_clusters/KC_centers_c'+str(N_CLUSTER)+'_s'+str(LOAD_STRIDE)+'.out'
+# np.savetxt(centers_path,centers,fmt = '%10.4g')
+# 
+# #----------------------------------------------------------------------------------
+# # Convert to pdb
+# #----------------------------------------------------------------------------------
+# pdb_path = '/home/shenglan/TryMSMbuilder/output/C/all_clusters/KC_c'+str(N_CLUSTER)+'_s'+str(LOAD_STRIDE)+'.pdb'
+# util.convert_sequences_to_pdb(seq_path,assign_path,pdb_path)
+# 
+# #----------------------------------------------------------------------------------
+# # Visualization of data
+# #----------------------------------------------------------------------------------
+# # fig5 = plt.figure(figsize=(14,3))
+# # 
+# # plt.plot(assignments[0],'r.',alpha = 0.5)
+# # plt.plot(assignments[1],'b.',alpha = 0.5)
+# # plt.plot(assignments[2],'g.',alpha = 0.5)
+# # plt.xlabel('Frame')
+# # plt.ylabel('Cluster number')
+# # plt.title('cluster numbers, condition B')
+# # plt.savefig('/home/shenglan/TryMSMbuilder/output/fig5.png')
+# # plt.close(fig5)
+# # 
+# #----------------------------------------------------------------------------------
+# fig4 = plt.figure(figsize=(18,8))
+# plt.title('lag time vs relaxation time condition B')
+# 
+# for i, n in enumerate(n_states):
+#     plt.subplot(1,len(n_states),1+i)
+#     plt.plot(np.array(lag_times)*time_step, np.array(msmts0[n])*time_step)
+#     if i == 0:
+#         plt.ylabel('Relaxation Timescale 1(ns)')
+#     plt.xlabel('Lag Time (ns)')
+#     plt.title('%d states' % n)
+# 
+# plt.savefig('/home/shenglan/TryMSMbuilder/output/C/all_clusters/lagtime_ts1.png')
+# plt.close(fig4)
+# 
+# #----------------------------------------------------------------------------------
+# fig6 = plt.figure(figsize=(18,8))
+# plt.title('lag time vs relaxation time condition B')
+# 
+# for i, n in enumerate(n_states):
+#     plt.subplot(1,len(n_states),1+i)
+#     plt.plot(np.array(lag_times)*time_step, np.array(msmts1[n])*time_step)
+#     if i == 0:
+#         plt.ylabel('Relaxation Timescale 2(ns)')
+#     plt.xlabel('Lag Time (ns)')
+#     plt.title('%d states' % n)
+# 
+# plt.savefig('/home/shenglan/TryMSMbuilder/output/C/all_clusters/lagtime_ts2.png')
+# plt.close(fig6)
+# 
+# #----------------------------------------------------------------------------------
+# fig7 = plt.figure(figsize=(18,8))
+# plt.title('lag time vs relaxation time condition B')
+# 
+# for i, n in enumerate(n_states):
+#     plt.subplot(1,len(n_states),1+i)
+#     plt.plot(np.array(lag_times)*time_step, np.array(msmts2[n])*time_step)
+#     if i == 0:
+#         plt.ylabel('Relaxation Timescale 3(ns)')
+#     plt.xlabel('Lag Time (ns)')
+#     plt.title('%d states' % n)
+# 
+# plt.savefig('/home/shenglan/TryMSMbuilder/output/C/all_clusters/lagtime_ts3.png')
+# plt.close(fig7)
 
 #----------------------------------------------------------------------------------
 # fig1 = plt.figure(figsize = (100,100))
