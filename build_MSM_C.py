@@ -3,6 +3,11 @@
 # Contributors:
 # Copyright (c) 2015, Stanford University
 # All rights reserved.
+# 
+# This script take all the simulation data in condition C to build MSM. The MSM saved here 
+# does not have an ergodic cutoff, i.e. all geometric clusters are used to make the 
+# transition matrix even if some are not strongly connected to the network. There is also
+# a choice of adding a prior.
 
 #-----------------------------------------------------------------------------
 # Imports
@@ -13,6 +18,8 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 from mpl_toolkits.mplot3d import Axes3D
 import utilities as util
+
+from mdtraj.geometry import distance as md_dist
 
 from msmbuilder.cluster import KCenters
 from msmbuilder.cluster import KMedoids
@@ -61,7 +68,43 @@ for ligand in ligands:
     iis = [atom.index for atom in simulations[0][0].topology.chain(0).atoms if str(atom.residue) == ligand]
     inds_all.append(iis)
 
-# #sequences of coordinates of ligands and Aps113
+#track ASP 113
+res_to_track = ['ASP113']
+target_res = []
+for residue in simulations[0][0].topology.chain(0).residues:
+    if str(residue) in res_to_track:
+        if str(residue) in str(target_res):
+            pass
+        else:
+            target_res.append(residue)
+
+ind_res = []
+for this_res in target_res:
+    ii = [atom.index for atom in this_res.atoms if atom.name in ['OD1']]
+    ind_res.append(ii)
+atom_pairs = []
+for this_lig in inds_N:
+    for lig_atom,rec_atom in zip(this_lig,ind_res[0]):
+        atom_pairs.append([lig_atom,rec_atom])
+atom_pairs = np.array(atom_pairs)
+print 'We are tracking distances between the following pairs of atoms:'     
+print atom_pairs
+
+distances = []
+for this_sim in simulations:
+    this_dist = []
+    for this_traj in this_sim:
+        
+        this_dist.extend(md_dist.compute_distances(this_traj,atom_pairs))
+    this_dist = np.array(this_dist)
+    distances.append(this_dist)
+
+dist_path = '/home/shenglan/TryMSMbuilder/output/C/all_clusters/dist_to_binding'+'_s'+str(LOAD_STRIDE)+'.out'
+pickle.dump(distances,open(dist_path,'wb'))
+    
+
+
+#sequences of coordinates of ligands
 total_frames = 0
 sequences_all = []
 for this_sim in simulations:
@@ -123,6 +166,9 @@ pickle.dump(msm,open(msm_path,'wb'))
 
 seq_path = '/home/shenglan/TryMSMbuilder/output/C/all_clusters/sequences'+'_s'+str(LOAD_STRIDE)+'.out'
 pickle.dump(sequences_all,open(seq_path,'wb'))
+
+dist_path = '/home/shenglan/TryMSMbuilder/output/C/all_clusters/dist_to_binding'+'_s'+str(LOAD_STRIDE)+'.out'
+pickle.dump(distances,open(dist_path,'wb'))
 
 assign_path = '/home/shenglan/TryMSMbuilder/output/C/all_clusters/KC_assign_c'+str(N_CLUSTER)+'_s'+str(LOAD_STRIDE)+'.out'
 pickle.dump(assignments,open(assign_path,'wb'))
