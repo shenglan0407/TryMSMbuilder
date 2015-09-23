@@ -36,7 +36,7 @@ for this_assign in geo_assign:
 raw_clusters = np.unique(np.array(raw_clusters))
 print('There are %d clusters in the original geometric clustering.'%len(raw_clusters))
 
-
+#generate a mapping of geometric clustering to microstates
 raw_to_micro_mapping = copy.copy(micro_msm.mapping_)
 N_MICRO = len(raw_to_micro_mapping)
 dummy_assign = N_MICRO
@@ -53,10 +53,11 @@ for this_assign in geo_assign:
     this_list = np.zeros(len(this_assign),dtype = int)
     micro_assign.append(this_list)
     
-    
+#map assignments for microstates    
 for nn in range(len(micro_assign)):
     for ii in range(len(micro_assign[nn])):
         micro_assign[nn][ii] = raw_to_micro_mapping[geo_assign[nn][ii]]
+
 
 #check for mismatch
 for this_assign, that_assign in zip(micro_assign,geo_assign):
