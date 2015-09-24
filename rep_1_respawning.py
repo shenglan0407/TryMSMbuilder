@@ -18,6 +18,7 @@ import matplotlib as mpl
 from mpl_toolkits.mplot3d import Axes3D
 import utilities as util
 import copy
+import os
 
 import mdtraj as md
 from mdtraj.geometry import distance as md_dist
@@ -35,18 +36,44 @@ mpl.rcParams['font.size'] = 24.0
 #-----------------------------------------------------------------------------
 
 
-N_CLUSTER = 10
+N_CLUSTER = 60
 LOAD_STRIDE = None
-BULK_CUTOFF = 5.0 #unit is nm
-N_LIGAND = 10
+BULK_CUTOFF = 4.0 #unit is nm
+N_LIGAND = 10*9
 
-sim_path = '/scratch/PI/rondror/MD_simulations/amber/b2AR_ligand_binding/alprenolol/ten_ligands/production/ten_ligands/1/'
-sim_file = 'b2AR_ALP_Prod1to9_skip1_reimaged.nc'
+sim_path = '/scratch/PI/rondror/MD_simulations/amber/b2AR_ligand_binding/alprenolol/ten_ligands/production/ten_ligands/reimaged_trajs/'
 topology = '/scratch/PI/rondror/MD_simulations/amber/b2AR_ligand_binding/alprenolol/ten_ligands/system.psf'
 
 # load simulation as mdtraj object
-traj = md.load(sim_path+sim_file,top = topology, stride = LOAD_STRIDE)
-simulations = [traj]
+simulations = []
+for this_file in os.listdir(sim_path):
+    if this_file.endswith('.nc'):
+        this_traj = md.load(sim_path+this_file,top = topology, stride = LOAD_STRIDE)
+        simulations.append(this_traj)
+print len(simulations)
+print simulations[-1]
+
+# gather some properties of the trajectories
+print ("There are %d replicates in the simulation." % len(simulations))
+n_frames = []
+
+for this_sim in simulations:
+    n_frames.append(this_sim.n_frames)
+n_frames = np.array(n_frames)
+time_step = simulations[0].timestep * 1e-3 # unit is ns
+# time_step2 = simulations[4].timestep * 1e-3
+# print time_step
+# print time_step2
+total_sim_time = np.sum(n_frames)*time_step
+
+print ("The time step between frames is %.2f." % time_step)
+print ("Total simulation time is %.2f ns." % total_sim_time)
+print ("The longest simulation is %.2f ns and the shortest %.5f ns." % (np.max(n_frames)*time_step,np.min(n_frames)*time_step))
+print ("Total number of frames is %d." % np.sum(n_frames))
+
+print ("We are building an MSM with %d clusters." % N_CLUSTER)
+
+
 
 # track atoms in ligands
 inds_N =[] #indices of N atom
@@ -186,15 +213,34 @@ bulk_clusters = []
 for ii in clusters_dist.keys():
     if np.average(clusters_dist[ii]) > BULK_CUTOFF:
         bulk_clusters.append(ii)
+print "These microstates are designated as bulk states:"
 print bulk_clusters
     
 mfpt_mat = mfpt.mfpts(micro_msm,sinks = bulk_clusters,lag_time = 1.0)
-print mfpt_mat.shape
-print mfpt_mat
+# print mfpt_mat.shape
+# print mfpt_mat
 print mfpt_mat[mfpt_mat > 0.0]
+bound_clusters = np.where(mfpt_mat> 0.0)[0]
+print 'The states to not in bulk are:'
 print np.where(mfpt_mat> 0.0)
 
+
 # calculate respawning probability
-respawn_pr = mfpt_mat/np.sum(mfpt_mat)
+log_t = np.log(mfpt_mat[mfpt_mat > 0.0])
+print log_t
+norm = np.sum(np.log(mfpt_mat[mfpt_mat > 0.0]))
+respawn_pr = log_t/np.sum(log_t)
+
+print respawn_pr
+print np.sum(respawn_pr)
 respawn_pop = np.array(respawn_pr*N_LIGAND,dtype = int)
 print respawn_pop
+
+# map microstate to respawning populations
+respawning = {}
+for ii in range(len(bound_clusters)):
+    respawning.update({bound_clusters[ii]:respawn_pop[ii]})
+respawning_path = '/home/shenglan/TryMSMbuilder/output/ten_ligands/respawning_c'+str(N_MICRO)+'_s'+str(LOAD_STRIDE)+'.out'
+pickle.dump(respawning,open(respawning_path,'wb'))
+
+print respawning
