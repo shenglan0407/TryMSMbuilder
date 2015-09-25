@@ -41,7 +41,7 @@ LOAD_STRIDE = None
 BULK_CUTOFF = 4.0 #unit is nm
 N_LIGAND = 10*9
 
-sim_path = '/scratch/PI/rondror/MD_simulations/amber/b2AR_ligand_binding/alprenolol/ten_ligands/production/ten_ligands/reimaged_trajs/'
+sim_path = '/scratch/PI/rondror/MD_simulations/amber/b2AR_ligand_binding/alprenolol/ten_ligands/production/ten_ligands/reimaged_trajs2/'
 topology = '/scratch/PI/rondror/MD_simulations/amber/b2AR_ligand_binding/alprenolol/ten_ligands/system.psf'
 
 # load simulation as mdtraj object
